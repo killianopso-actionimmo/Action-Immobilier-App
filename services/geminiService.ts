@@ -3,7 +3,6 @@ import { GoogleGenAI } from "@google/genai";
 // --- SECURE KEY RETRIEVAL (VITE STANDARDS) ---
 const getApiKey = () => {
   const key = import.meta.env.VITE_GEMINI_API_KEY;
-
   if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
     throw new Error("Configuration système manquante (VITE_GEMINI_API_KEY)");
   }
@@ -48,8 +47,9 @@ const cleanJsonResponse = (text: string | undefined): string => {
   return cleaned.trim();
 };
 
-const SYSTEM_PROMPT_STREET = `Expert Immobilier. JSON brut uniquement.`;
-const SYSTEM_PROMPT_TECHNICAL = `ROLE: EXPERT TECHNIQUE. JSON brut uniquement.`;
+// --- PROMPTS ---
+const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Réponds UNIQUEMENT en JSON brut. { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
+const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE. JSON brut uniquement.`;
 const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON brut uniquement.`;
 const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON brut uniquement.`;
 const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON brut uniquement.`;
@@ -57,137 +57,104 @@ const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement.`;
 const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON brut uniquement.`;
 const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement.`;
 const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement.`;
-const SYSTEM_PROMPT_PROSPECTION = `IA Action Immobilier. JSON brut uniquement.`;
+const SYSTEM_PROMPT_PROSPECTION = `IA Action Immobilier. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
 const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `Synthese Markdown.`;
-const SYSTEM_PROMPT_DYNAMIC_REDACTION = `Communication. JSON brut uniquement.`;
+const SYSTEM_PROMPT_DYNAMIC_REDACTION = `Communication. JSON: { "subject": "...", "content": "..." }`;
 
-const getModel = (instruction: string, tools?: any[]) => {
+// --- CORE GENERATION HELPER (NEXT GEN SDK V1.x) ---
+const callGemini = async (contents: any, systemInstruction: string, tools?: any[]) => {
   const apiKey = getApiKey();
-  // CRITICAL: GoogleGenAI (Next Gen ^1.x) constructor expects { apiKey } object
-  const genAI = new GoogleGenAI({ apiKey });
-  return genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: instruction,
-    tools: tools as any
-  });
+  const ai = new GoogleGenAI({ apiKey });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: Array.isArray(contents) ? contents : [{ role: "user", parts: [{ text: contents }] }],
+      config: {
+        systemInstruction,
+        temperature: 0.4,
+        tools: tools as any
+      }
+    });
+    return response.text;
+  } catch (e) {
+    console.error("Gemini SDK Error:", e);
+    throw new Error(classifyError(e));
+  }
 };
 
+// --- API METHODS ---
 export const generateStreetReport = async (address: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_STREET, [{ googleMaps: {} }]);
-    const result = await model.generateContent(`Analyse : ${address}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Analyse : ${address}`, SYSTEM_PROMPT_STREET, [{ googleMaps: {} }]);
+  return cleanJsonResponse(text);
 };
 
 export const generateTechnicalReport = async (description: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_TECHNICAL);
-    const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Analyse : ${sanitizeInput(description)}`, SYSTEM_PROMPT_TECHNICAL);
+  return cleanJsonResponse(text);
 };
 
 export const generateHeatingReport = async (description: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_HEATING);
-    const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Analyse : ${sanitizeInput(description)}`, SYSTEM_PROMPT_HEATING);
+  return cleanJsonResponse(text);
 };
 
 export const generateRenovationReport = async (description: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_RENOVATION);
-    const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Analyse : ${sanitizeInput(description)}`, SYSTEM_PROMPT_RENOVATION);
+  return cleanJsonResponse(text);
 };
 
 export const generateChecklistReport = async (description: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_CHECKLIST);
-    const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Analyse : ${sanitizeInput(description)}`, SYSTEM_PROMPT_CHECKLIST);
+  return cleanJsonResponse(text);
 };
 
 export const generateCoproReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_COPRO);
-    const parts: any[] = [];
-    if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
-    if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const parts: any[] = [];
+  if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
+  if (input) parts.push({ text: sanitizeInput(input) });
+  if (parts.length === 0) return "{}";
+
+  const text = await callGemini([{ role: "user", parts }], SYSTEM_PROMPT_COPRO);
+  return cleanJsonResponse(text);
 };
 
 export const generatePigeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_PIGE);
-    const parts: any[] = [];
-    if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
-    if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const parts: any[] = [];
+  if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
+  if (input) parts.push({ text: sanitizeInput(input) });
+  if (parts.length === 0) return "{}";
+
+  const text = await callGemini([{ role: "user", parts }], SYSTEM_PROMPT_PIGE);
+  return cleanJsonResponse(text);
 };
 
 export const generateDpeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_DPE);
-    const parts: any[] = [];
-    if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
-    if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const parts: any[] = [];
+  if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
+  if (input) parts.push({ text: sanitizeInput(input) });
+  if (parts.length === 0) return "{}";
+
+  const text = await callGemini([{ role: "user", parts }], SYSTEM_PROMPT_DPE);
+  return cleanJsonResponse(text);
 };
 
 export const generateRedactionReport = async (input: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_REDACTION);
-    const result = await model.generateContent(`Rédige : ${sanitizeInput(input)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error(classifyError(error)); }
+  const text = await callGemini(`Rédige : ${sanitizeInput(input)}`, SYSTEM_PROMPT_REDACTION);
+  return cleanJsonResponse(text);
 };
 
 export const generateProspectionReport = async (input: string): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_PROSPECTION);
-    const result = await model.generateContent(`Date=${new Date().toISOString()}. IN: ${sanitizeInput(input)}`);
-    const response = await result.response;
-    return cleanJsonResponse(response.text());
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Date=${new Date().toISOString()}. IN: ${sanitizeInput(input)}`, SYSTEM_PROMPT_PROSPECTION);
+  return cleanJsonResponse(text);
 };
 
 export const generateEstimationSummary = async (data: any): Promise<string> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_ESTIMATION_SUMMARY);
-    const result = await model.generateContent(`Synthèse: ${JSON.stringify(data)}`);
-    const response = await result.response;
-    return response.text();
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`Synthèse: ${JSON.stringify(data)}`, SYSTEM_PROMPT_ESTIMATION_SUMMARY);
+  return text || "";
 };
 
 export const generateDynamicRedaction = async (type: string, desc: string, variant: boolean = false): Promise<any> => {
-  try {
-    const model = getModel(SYSTEM_PROMPT_DYNAMIC_REDACTION);
-    const result = await model.generateContent(`T: ${type}, D: ${sanitizeInput(desc)}, V: ${variant}`);
-    const response = await result.response;
-    return JSON.parse(cleanJsonResponse(response.text()));
-  } catch (e) { throw new Error(classifyError(e)); }
+  const text = await callGemini(`T: ${type}, D: ${sanitizeInput(desc)}, V: ${variant}`, SYSTEM_PROMPT_DYNAMIC_REDACTION);
+  return JSON.parse(cleanJsonResponse(text));
 };
