@@ -1,7 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
+const FALLBACK_KEY = "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
+
 const getApiKey = () => {
-  return import.meta.env.VITE_GEMINI_API_KEY;
+  // Try Vite env
+  let key = import.meta.env.VITE_GEMINI_API_KEY;
+
+  // Validate key
+  if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
+    return FALLBACK_KEY;
+  }
+  return key;
 };
 
 const sanitizeInput = (text: string): string => {
@@ -19,34 +28,23 @@ const cleanJsonResponse = (text: string | undefined): string => {
   return cleaned.trim();
 };
 
-const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". IMPORTANT : Réponds UNIQUEMENT avec le JSON brut. PAS de balises markdown. Structure attendue : { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
-
-const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE IMMOBILIER. Analyse les équipements techniques. JSON brut uniquement. { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
-
-const SYSTEM_PROMPT_HEATING = `### EXPERT TECHNIQUE : CHAUFFAGE & ECS. JSON brut uniquement. { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
-
-const SYSTEM_PROMPT_RENOVATION = `### SECTION : POTENTIEL TRAVAUX & VALORISATION RAPIDE. JSON brut uniquement. { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
-
-const SYSTEM_PROMPT_CHECKLIST = `### SECTION : FICHE DE ROUTE TERRAIN. JSON brut uniquement. { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
-
-const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement. { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
-
-const SYSTEM_PROMPT_PIGE = `### PIGE STRATÉGIQUE. JSON brut uniquement. { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
-
-const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement. { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
-
-const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement. { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
-
-const SYSTEM_PROMPT_PROSPECTION = `ROLE : Intelligence centrale Action Immobilier. Nettoie et structure l'input. JSON brut uniquement. CAS [ADD] : { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }. CAS [DELETE] : { "intent": "delete_request", "assistant_response": "...", "target": "...", "scope": "..." }`;
-
+// --- PROMPTS ---
+const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". IMPORTANT : Réponds UNIQUEMENT avec le JSON brut. PAS de balises markdown. JSON: { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
+const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE IMMOBILIER. Analyse les équipements techniques. JSON brut uniquement: { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
+const SYSTEM_PROMPT_HEATING = `### EXPERT TECHNIQUE : CHAUFFAGE & ECS. JSON brut uniquement: { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
+const SYSTEM_PROMPT_RENOVATION = `### SECTION : POTENTIEL TRAVAUX & VALORISATION RAPIDE. JSON brut uniquement: { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
+const SYSTEM_PROMPT_CHECKLIST = `### SECTION : FICHE DE ROUTE TERRAIN. JSON brut uniquement: { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
+const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement: { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
+const SYSTEM_PROMPT_PIGE = `### PIGE STRATÉGIQUE. JSON brut uniquement: { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
+const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement: { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
+const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement: { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
+const SYSTEM_PROMPT_PROSPECTION = `ROLE : Intelligence centrale Action Immobilier. Nettoie et structure l'input. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
 const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur Senior Action Immobilier. Synthétise les notes en rapport Markdown propre.`;
-
 const SYSTEM_PROMPT_DYNAMIC_REDACTION = `ROLE : Assistant Communication. JSON brut uniquement: { "subject": "...", "content": "..." }`;
 
+// --- METHODS ---
 export const generateStreetReport = async (address: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key configuration missing (VITE_GEMINI_API_KEY)");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_STREET });
   try {
     const result = await model.generateContent(`Analyse l'adresse : ${address}.`);
@@ -56,9 +54,7 @@ export const generateStreetReport = async (address: string): Promise<string> => 
 };
 
 export const generateTechnicalReport = async (description: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_TECHNICAL });
   try {
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
@@ -68,9 +64,7 @@ export const generateTechnicalReport = async (description: string): Promise<stri
 };
 
 export const generateHeatingReport = async (description: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_HEATING });
   try {
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
@@ -80,9 +74,7 @@ export const generateHeatingReport = async (description: string): Promise<string
 };
 
 export const generateRenovationReport = async (description: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_RENOVATION });
   try {
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
@@ -92,9 +84,7 @@ export const generateRenovationReport = async (description: string): Promise<str
 };
 
 export const generateChecklistReport = async (description: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_CHECKLIST });
   try {
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
@@ -104,15 +94,12 @@ export const generateChecklistReport = async (description: string): Promise<stri
 };
 
 export const generateCoproReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_COPRO });
   try {
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
@@ -120,15 +107,12 @@ export const generateCoproReport = async (input: string, fileData?: { data: stri
 };
 
 export const generatePigeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_PIGE });
   try {
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
@@ -136,15 +120,12 @@ export const generatePigeReport = async (input: string, fileData?: { data: strin
 };
 
 export const generateDpeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_DPE });
   try {
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
-    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
@@ -152,9 +133,7 @@ export const generateDpeReport = async (input: string, fileData?: { data: string
 };
 
 export const generateRedactionReport = async (input: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_REDACTION });
   try {
     const result = await model.generateContent(`Rédige pour : "${sanitizeInput(input)}"`);
@@ -164,9 +143,7 @@ export const generateRedactionReport = async (input: string): Promise<string> =>
 };
 
 export const generateProspectionReport = async (input: string): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_PROSPECTION });
   try {
     const result = await model.generateContent(`Date=${new Date().toISOString()}. INPUT : "${sanitizeInput(input)}"`);
@@ -176,9 +153,7 @@ export const generateProspectionReport = async (input: string): Promise<string> 
 };
 
 export const generateEstimationSummary = async (data: any): Promise<string> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_ESTIMATION_SUMMARY });
   try {
     const result = await model.generateContent(`Synthèse pour : ${JSON.stringify(data)}`);
@@ -188,9 +163,7 @@ export const generateEstimationSummary = async (data: any): Promise<string> => {
 };
 
 export const generateDynamicRedaction = async (type: string, desc: string, variant: boolean = false): Promise<any> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key missing");
-  const genAI = new GoogleGenAI(apiKey);
+  const genAI = new GoogleGenAI(getApiKey());
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_DYNAMIC_REDACTION });
   try {
     const result = await model.generateContent(`TYPE: ${type}, DESC: ${sanitizeInput(desc)}, VAR: ${variant}`);
