@@ -5,67 +5,54 @@ export const config = {
 };
 
 export default async function handler(req: any, res: any) {
-    console.log("--- New Gemini Proxy Request ---");
-
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 1. Get API Key - Checking all common naming conventions for Vercel secrets
     const apiKey = process.env.VITE_GEMINI_API_KEY ||
         process.env.GOOGLE_API_KEY ||
         process.env.GEMINI_API_KEY ||
         process.env.API_KEY;
 
     if (!apiKey) {
-        console.error("Critical: No API Key found in server environment.");
-        return res.status(500).json({ error: 'Clé API non détectée sur le serveur (VITE_GEMINI_API_KEY)' });
+        return res.status(500).json({ error: 'Clé API non détectée sur le serveur' });
     }
 
     const { contents, systemInstruction, tools } = req.body;
-    console.log("System Instruction Length:", systemInstruction?.length || 0);
 
     try {
         const ai = new GoogleGenAI({ apiKey });
 
-        // Explicitly using the models.generateContent method for Next Gen SDK compatibility
+        // Using the Full Model Path as required by some Next Gen SDK versions
+        // and ensuring the contents follow the strict [ { role: 'user', parts: [ { text: '...' } ] } ] format
         const response = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-flash", // The SDK often handles the prefix, but we check if it fails
             contents: Array.isArray(contents) ? contents : [{ role: "user", parts: [{ text: contents }] }],
             config: {
-                systemInstruction,
+                systemInstruction: systemInstruction || "Tu es un assistant utile.",
                 temperature: 0.4,
                 tools: tools as any
             }
         });
 
-        console.log("Gemini API Status: OK");
         return res.status(200).json({ text: response.text });
     } catch (error: any) {
-        console.error("Gemini SDK Execution Failed:", error);
+        console.error("DEBUG - Gemini Error Details:", JSON.stringify(error, null, 2));
 
-        // Transparent error categorization for debugging
-        const errorString = String(error).toLowerCase();
-        const msg = error?.message?.toLowerCase() || "";
+        const msg = error?.message || String(error);
+        const lowMsg = msg.toLowerCase();
 
-        let userMsg = "Erreur technique IA.";
-
-        if (msg.includes("403") || msg.includes("api key") || msg.includes("invalid")) {
-            userMsg = "Erreur de clé (403/Invalide).";
-        } else if (msg.includes("429") || msg.includes("quota")) {
-            userMsg = "Quota atteint (429).";
-        } else if (msg.includes("not found") || msg.includes("model")) {
-            userMsg = "Modèle introuvable ou mal configuré.";
-        } else if (msg.includes("region") || msg.includes("location") || msg.includes("not supported")) {
-            userMsg = "Région bloquée (USA proxy failed?).";
+        let userMsg = "Erreur IA.";
+        if (lowMsg.includes("403") || lowMsg.includes("api key")) userMsg = "Authentification échouée (Clé).";
+        else if (lowMsg.includes("429") || lowMsg.includes("quota")) userMsg = "Quotas atteints.";
+        else if (lowMsg.includes("not found") || lowMsg.includes("model")) {
+            // Fallback to simpler model string if first one fails?
+            // Let's just expose the error for now so we can fix it for good
+            userMsg = `Model Error: ${msg.substring(0, 100)}`;
         } else {
-            // Fallback to include the first few chars of the error for visual debug
-            userMsg = `Erreur IA: ${error.message?.substring(0, 50)}...`;
+            userMsg = `IA Feedback: ${msg.substring(0, 100)}`;
         }
 
-        return res.status(500).json({
-            error: userMsg,
-            details: error.message
-        });
+        return res.status(500).json({ error: userMsg, details: msg });
     }
 }
