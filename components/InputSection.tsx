@@ -133,190 +133,190 @@ const InputSection: React.FC<InputSectionProps> = ({ onGenerate, loadingState, m
           <p className="mt-1 text-zinc-400 font-light text-xs uppercase tracking-widest">
             Assistant Stratégique IA
           </p>
-        </div>
-
-        {/* Level 1 Navigation (Main Tabs) */}
-        <div className="flex flex-wrap justify-center gap-2 md:gap-4 border-b border-zinc-100 pb-1">
-          {[
-            { id: 'estimation', label: 'Estimation', icon: MapPin },
-            { id: 'copro', label: 'Copro', icon: Building },
-            { id: 'pige', label: 'Pige', icon: PhoneCall },
-            { id: 'dpe', label: 'DPE Booster', icon: Leaf },
-            { id: 'redaction', label: 'Rédaction', icon: PenTool },
-            { id: 'prospection', label: 'Prospection', icon: Map },
-            { id: 'mandate_watch', label: 'Veille', icon: Search },
-            { id: 'dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleMainTabChange(tab.id as MainTab)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm md:text-base font-medium transition-all border-b-2 ${currentMainTab === tab.id
-                ? 'border-zinc-900 text-zinc-900'
-                : 'border-transparent text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
-                }`}
-            >
-              <tab.icon size={18} />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Level 2 Navigation (Only for Estimation) */}
-        {currentMainTab === 'estimation' && (
-          <div className="flex flex-wrap justify-center gap-2 animate-in fade-in slide-in-from-top-2">
-            {[
-              { id: 'street', label: 'Quartier' },
-              { id: 'technical', label: 'Technique' },
-              { id: 'heating', label: 'Chauffage' },
-              { id: 'renovation', label: 'Travaux' },
-              { id: 'checklist', label: 'Terrain' },
-            ].map((sub) => (
-              <button
-                key={sub.id}
-                onClick={() => onModeChange(sub.id as AnalysisMode)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${mode === sub.id
-                  ? 'bg-zinc-900 text-white'
-                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                  }`}
-              >
-                {sub.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* --- PROSPECTION MODE DUAL INPUT --- */}
-        {mode === 'prospection' ? (
-          <div className="grid md:grid-cols-2 gap-4 mt-6">
-
-            {/* ADD BAR */}
-            <form onSubmit={handleSubmit} className="relative group shadow-lg shadow-emerald-100/50 rounded-xl bg-white border border-emerald-200 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-50 transition-all">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ajouter une action (ex: Boîtage Rue de la Paix)..."
-                className="w-full pl-5 pr-12 py-4 bg-transparent outline-none text-emerald-900 placeholder-emerald-800/50"
-                disabled={loadingState === LoadingState.LOADING}
-              />
-              <button
-                type="submit"
-                disabled={loadingState === LoadingState.LOADING || !inputValue.trim()}
-                className="absolute right-2 top-2 bottom-2 bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loadingState === LoadingState.LOADING ? <Loader2 className="w-5 h-5 animate-spin" /> : <PlusCircle className="w-5 h-5" />}
-              </button>
-            </form>
-
-            {/* DELETE BAR */}
-            <form onSubmit={handleDeleteSubmit} className="relative group shadow-lg shadow-red-100/50 rounded-xl bg-white border border-red-200 focus-within:border-red-500 focus-within:ring-4 focus-within:ring-red-50 transition-all">
-              <input
-                type="text"
-                value={deleteValue}
-                onChange={(e) => setDeleteValue(e.target.value)}
-                placeholder="Supprimer (ex: Enlever Rue de la Paix)..."
-                className="w-full pl-5 pr-12 py-4 bg-transparent outline-none text-red-900 placeholder-red-800/50"
-                disabled={loadingState === LoadingState.LOADING}
-              />
-              <button
-                type="submit"
-                disabled={loadingState === LoadingState.LOADING || !deleteValue.trim()}
-                className="absolute right-2 top-2 bottom-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loadingState === LoadingState.LOADING ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
-              </button>
-            </form>
-
-          </div>
-        ) : mode !== 'dashboard' && (
-          // --- STANDARD INPUT FORM ---
-          <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto mt-6">
-            <div className={`relative group shadow-xl shadow-zinc-200/50 rounded-2xl transition-shadow hover:shadow-lg bg-white overflow-hidden border border-zinc-200 focus-within:border-pink-300 focus-within:ring-4 focus-within:ring-pink-50 flex flex-col`}>
-
-              {allowFileUpload && (
-                <div
-                  className={`p-4 border-b border-zinc-100 transition-colors ${selectedFile ? 'bg-zinc-50' : 'bg-white hover:bg-zinc-50'}`}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                >
-                  {!selectedFile ? (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-zinc-200 rounded-lg p-6 text-center cursor-pointer hover:border-pink-300 transition-colors flex flex-col items-center gap-2"
-                    >
-                      <Upload className="text-zinc-400" />
-                      <p className="text-sm text-zinc-500 font-medium">
-                        Glissez un fichier ou <span className="text-pink-600 underline">cliquez pour importer</span>
-                      </p>
-                      <p className="text-xs text-zinc-400">PDF, PNG, JPG supportés</p>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-white border border-zinc-200 p-3 rounded-lg shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-pink-100 p-2 rounded">
-                          {selectedFile.type.includes('image') ? <ImageIcon size={20} className="text-pink-600" /> : <FileText size={20} className="text-pink-600" />}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-zinc-900 truncate max-w-[200px]">{selectedFile.name}</p>
-                          <p className="text-xs text-zinc-500">{(selectedFile.size / 1024).toFixed(0)} KB</p>
-                        </div>
-                      </div>
-                      <button type="button" onClick={clearFile} className="p-1 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-zinc-600">
-                        <X size={16} />
-                      </button>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept={getAcceptTypes()}
-                  />
-                </div>
-              )}
-
-              {mode === 'street' ? (
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={getPlaceholder()}
-                  className="w-full pl-6 pr-20 py-4 bg-transparent outline-none text-zinc-800 placeholder-zinc-400 text-lg"
-                  disabled={loadingState === LoadingState.LOADING}
-                />
-              ) : (
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={selectedFile ? "Ajoutez des notes complémentaires (optionnel)..." : getPlaceholder()}
-                  className="w-full pl-6 pr-6 py-4 bg-transparent outline-none text-zinc-800 placeholder-zinc-400 text-base min-h-[100px] resize-none"
-                  disabled={loadingState === LoadingState.LOADING}
-                />
-              )}
-
-              <div className={`${mode !== 'street' ? 'p-4 flex justify-end bg-zinc-50 border-t border-zinc-100' : 'absolute right-1.5 top-1.5 bottom-1.5'}`}>
+          <div className="space-y-6 mt-8">
+            {/* Main Category Tabs */}
+            <div className="flex overflow-x-auto scrollbar-hide border-b border-zinc-100 -mx-6 px-6 no-scrollbar">
+              {[
+                { id: 'estimation', label: 'Estimation', icon: ClipboardList },
+                { id: 'copro', label: 'Copro', icon: Building },
+                { id: 'pige', label: 'Pige', icon: PhoneCall },
+                { id: 'dpe', label: 'DPE', icon: Leaf },
+                { id: 'redaction', label: 'Rédaction', icon: PenTool },
+                { id: 'prospection', label: 'Zone', icon: Map },
+                { id: 'mandate_watch', label: 'Veille', icon: Search },
+                { id: 'dashboard', label: 'Stats', icon: LayoutDashboard },
+              ].map((tab) => (
                 <button
-                  type="submit"
-                  disabled={loadingState === LoadingState.LOADING || (!inputValue.trim() && !selectedFile)}
-                  className={`${mode !== 'street' ? 'w-full md:w-auto px-8 py-2' : 'px-6 h-full'} bg-zinc-900 hover:bg-pink-600 text-white rounded-lg font-sans font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                  key={tab.id}
+                  onClick={() => handleMainTabChange(tab.id as MainTab)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm md:text-base font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap shrink-0 ${currentMainTab === tab.id
+                    ? 'border-zinc-900 text-zinc-900'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
+                    }`}
                 >
-                  {loadingState === LoadingState.LOADING ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">{selectedFile ? 'Lecture...' : 'IA...'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-sm">Générer</span>
-                      {mode === 'street' && <Search className="w-4 h-4" />}
-                    </>
-                  )}
+                  <tab.icon size={18} />
+                  {tab.label}
                 </button>
-              </div>
+              ))}
             </div>
-          </form>
-        )}
+
+            {/* Level 2 Navigation (Only for Estimation) */}
+            {currentMainTab === 'estimation' && (
+              <div className="flex flex-wrap justify-center gap-2 animate-in fade-in slide-in-from-top-2">
+                {[
+                  { id: 'street', label: 'Quartier' },
+                  { id: 'technical', label: 'Technique' },
+                  { id: 'heating', label: 'Chauffage' },
+                  { id: 'renovation', label: 'Travaux' },
+                  { id: 'checklist', label: 'Terrain' },
+                ].map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => onModeChange(sub.id as AnalysisMode)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${mode === sub.id
+                      ? 'bg-zinc-900 text-white'
+                      : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                      }`}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* --- PROSPECTION MODE DUAL INPUT --- */}
+            {mode === 'prospection' ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* ADD BAR */}
+                <form onSubmit={handleSubmit} className="relative group shadow-lg shadow-emerald-100/50 rounded-xl bg-white border border-emerald-200 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-50 transition-all">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Ajouter une action..."
+                    className="w-full pl-5 pr-12 py-4 bg-transparent outline-none text-emerald-900"
+                    disabled={loadingState === LoadingState.LOADING}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loadingState === LoadingState.LOADING || !inputValue.trim()}
+                    className="absolute right-2 top-2 bottom-2 bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {loadingState === LoadingState.LOADING ? <Loader2 className="w-5 h-5 animate-spin" /> : <PlusCircle className="w-5 h-5" />}
+                  </button>
+                </form>
+
+                {/* DELETE BAR */}
+                <form onSubmit={handleDeleteSubmit} className="relative group shadow-lg shadow-red-100/50 rounded-xl bg-white border border-red-200 focus-within:border-red-500 focus-within:ring-4 focus-within:ring-red-50 transition-all">
+                  <input
+                    type="text"
+                    value={deleteValue}
+                    onChange={(e) => setDeleteValue(e.target.value)}
+                    placeholder="Supprimer..."
+                    className="w-full pl-5 pr-12 py-4 bg-transparent outline-none text-red-900"
+                    disabled={loadingState === LoadingState.LOADING}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loadingState === LoadingState.LOADING || !deleteValue.trim()}
+                    className="absolute right-2 top-2 bottom-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {loadingState === LoadingState.LOADING ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  </button>
+                </form>
+
+              </div>
+            ) : mode !== 'dashboard' && (
+              // --- STANDARD INPUT FORM ---
+              <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
+                <div className={`relative group shadow-xl shadow-zinc-200/50 rounded-2xl transition-shadow hover:shadow-lg bg-white overflow-hidden border border-zinc-200 focus-within:border-pink-300 focus-within:ring-4 focus-within:ring-pink-50 flex flex-col`}>
+
+                  {allowFileUpload && (
+                    <div
+                      className={`p-4 border-b border-zinc-100 transition-colors ${selectedFile ? 'bg-zinc-50' : 'bg-white hover:bg-zinc-50'}`}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                    >
+                      {!selectedFile ? (
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed border-zinc-200 rounded-lg p-6 text-center cursor-pointer hover:border-pink-300 transition-colors flex flex-col items-center gap-2"
+                        >
+                          <Upload className="text-zinc-400" size={20} />
+                          <p className="text-sm text-zinc-500 font-medium">
+                            Glissez un fichier ou <span className="text-pink-600 underline">cliquez pour importer</span>
+                          </p>
+                          <p className="text-xs text-zinc-400">PDF, PNG, JPG supportés</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between bg-white border border-zinc-200 p-3 rounded-lg shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-pink-100 p-2 rounded">
+                              {selectedFile.type.includes('image') ? <ImageIcon size={20} className="text-pink-600" /> : <FileText size={20} className="text-pink-600" />}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-zinc-900 truncate max-w-[200px]">{selectedFile.name}</p>
+                              <p className="text-xs text-zinc-500">{(selectedFile.size / 1024).toFixed(0)} KB</p>
+                            </div>
+                          </div>
+                          <button type="button" onClick={clearFile} className="p-1 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-zinc-600">
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept={getAcceptTypes()}
+                      />
+                    </div>
+                  )}
+
+                  {mode === 'street' ? (
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={getPlaceholder()}
+                      className="w-full pl-6 pr-20 py-4 bg-transparent outline-none text-zinc-800 placeholder-zinc-400 text-lg"
+                      disabled={loadingState === LoadingState.LOADING}
+                    />
+                  ) : (
+                    <textarea
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={selectedFile ? "Ajoutez des notes complémentaires (optionnel)..." : getPlaceholder()}
+                      className="w-full pl-6 pr-6 py-4 bg-transparent outline-none text-zinc-800 placeholder-zinc-400 text-base min-h-[100px] resize-none"
+                      disabled={loadingState === LoadingState.LOADING}
+                    />
+                  )}
+
+                  <div className={`${mode !== 'street' ? 'p-4 flex justify-end bg-zinc-50 border-t border-zinc-100' : 'absolute right-1.5 top-1.5 bottom-1.5'}`}>
+                    <button
+                      type="submit"
+                      disabled={loadingState === LoadingState.LOADING || (!inputValue.trim() && !selectedFile)}
+                      className={`${mode !== 'street' ? 'w-full md:w-auto px-8 py-2' : 'px-6 h-full'} bg-zinc-900 hover:bg-pink-600 text-white rounded-lg font-sans font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                    >
+                      {loadingState === LoadingState.LOADING ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">{selectedFile ? 'Lecture...' : 'IA...'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm">Générer</span>
+                          {mode === 'street' && <Search className="w-4 h-4" />}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
