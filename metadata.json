@@ -1,0 +1,5 @@
+{
+  "name": "Action Immobilier",
+  "description": "Assistant immobilier stratégique générant des rapports d'expertise de rue ultra-détaillés grâce à Gemini 2.5 et Google Maps.",
+  "requestFramePermissions": []
+}
