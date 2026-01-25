@@ -1,45 +1,42 @@
 import { GoogleGenAI } from "@google/genai";
 
-// --- RECOVERY LOGIC (TS VERSION OF PYTHON OS.ENVIRON) ---
+// --- SECURE KEY RETRIEVAL (STRICTLY VIA ENVIRONMENT VARIABLES) ---
 const getApiKey = () => {
-  // 1. Check all possible names (mimicking Python adaptation)
   const env = import.meta.env;
-  const key = env.GOOGLE_API_KEY ||
-    env.VITE_GEMINI_API_KEY ||
-    env.API_KEY ||
-    (env as any).GEMINI_API_KEY;
+  // Priority check as requested
+  const key = env.VITE_GEMINI_API_KEY ||
+    env.VITE_GOOGLE_API_KEY ||
+    env.GOOGLE_API_KEY ||
+    env.API_KEY;
 
-  // 2. Validation
   if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
-    // Last resort: Hardcoded fallback provided in prompt
-    return "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
+    throw new Error("Configuration système manquante (API KEY)");
   }
   return key;
 };
 
-// Diagnostic helper (requested as /api-status equivalent)
+// Diagnostic helper
 export const getApiStatus = (): string => {
-  const key = getApiKey();
-  // Check if it's the fallback or a real environment variable
-  if (!key) return 'VIDE';
-  if (key === "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30" && !import.meta.env.VITE_GEMINI_API_KEY) {
-    return 'FALLBACK (Variables non détectées)';
+  try {
+    const key = getApiKey();
+    return key ? 'OK' : 'VIDE';
+  } catch (e) {
+    return 'VIDE';
   }
-  return 'OK';
 };
 
 const classifyError = (error: any): string => {
   const msg = error?.message?.toLowerCase() || "";
   if (msg.includes("api key") || msg.includes("403") || msg.includes("401")) {
-    return "Erreur d'authentification : La clé API est invalide ou non reconnue par Google.";
+    return "Erreur d'authentification : Clé manquante ou invalide.";
   }
   if (msg.includes("429") || msg.includes("quota")) {
-    return "Quota atteint : Trop de requêtes envoyées. Veuillez patienter un instant.";
+    return "Quota atteint : Trop de requêtes envoyées.";
   }
   if (msg.includes("region") || msg.includes("location") || msg.includes("not supported")) {
-    return "Erreur de région : Le service Gemini n'est pas disponible dans votre zone géographique actuelle (utilisez un USA/Belgique si besoin).";
+    return "Erreur de région : Service non supporté dans cette zone.";
   }
-  return `Erreur technique IA : ${error?.message || "Erreur inconnue"}`;
+  return `Erreur technique : ${error?.message || "Erreur inconnue"}`;
 };
 
 const sanitizeInput = (text: string): string => {
@@ -58,20 +55,20 @@ const cleanJsonResponse = (text: string | undefined): string => {
 };
 
 // --- PROMPTS ---
-const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Réponds UNIQUEMENT en JSON brut. Structure: { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
-const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE. JSON brut uniquement. { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
-const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON brut uniquement. { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
-const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON brut uniquement. { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
-const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON brut uniquement. { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
-const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement. { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
-const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON brut uniquement. { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
-const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement. { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
-const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement. { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
-const SYSTEM_PROMPT_PROSPECTION = `ROLE : IA Action Immobilier. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
-const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur Action Immobilier. Synthétise en Markdown.`;
-const SYSTEM_PROMPT_DYNAMIC_REDACTION = `ROLE : Assistant Communication. JSON: { "subject": "...", "content": "..." }`;
+const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier. Réponds UNIQUEMENT en JSON brut. { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
+const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE. JSON: { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
+const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON: { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
+const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON: { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
+const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON: { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
+const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON: { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
+const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON: { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
+const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON: { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
+const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON: { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
+const SYSTEM_PROMPT_PROSPECTION = `IA Action Immobilier. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
+const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur. Synthétise en Markdown.`;
+const SYSTEM_PROMPT_DYNAMIC_REDACTION = `Assistant Communication. JSON: { "subject": "...", "content": "..." }`;
 
-// --- HELPER INITIALIZATION ---
+// --- HELPER ---
 const getModel = (instruction: string, tools?: any[]) => {
   const apiKey = getApiKey();
   const genAI = new GoogleGenAI(apiKey);
@@ -82,14 +79,14 @@ const getModel = (instruction: string, tools?: any[]) => {
   });
 };
 
-// --- METHODS ---
+// --- API METHODS ---
 export const generateStreetReport = async (address: string): Promise<string> => {
   try {
     const model = getModel(SYSTEM_PROMPT_STREET, [{ googleMaps: {} }]);
     const result = await model.generateContent(`Analyse : ${address}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw new Error(classifyError(e)); }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateTechnicalReport = async (description: string): Promise<string> => {
@@ -98,7 +95,7 @@ export const generateTechnicalReport = async (description: string): Promise<stri
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateHeatingReport = async (description: string): Promise<string> => {
@@ -107,7 +104,7 @@ export const generateHeatingReport = async (description: string): Promise<string
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateRenovationReport = async (description: string): Promise<string> => {
@@ -116,7 +113,7 @@ export const generateRenovationReport = async (description: string): Promise<str
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateChecklistReport = async (description: string): Promise<string> => {
@@ -125,7 +122,7 @@ export const generateChecklistReport = async (description: string): Promise<stri
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateCoproReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
@@ -138,7 +135,7 @@ export const generateCoproReport = async (input: string, fileData?: { data: stri
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generatePigeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
@@ -151,7 +148,7 @@ export const generatePigeReport = async (input: string, fileData?: { data: strin
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateDpeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
@@ -164,7 +161,7 @@ export const generateDpeReport = async (input: string, fileData?: { data: string
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateRedactionReport = async (input: string): Promise<string> => {
@@ -173,7 +170,7 @@ export const generateRedactionReport = async (input: string): Promise<string> =>
     const result = await model.generateContent(`Rédige pour : ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { console.error(error); throw new Error(classifyError(error)); }
+  } catch (error) { throw new Error(classifyError(error)); }
 };
 
 export const generateProspectionReport = async (input: string): Promise<string> => {
@@ -182,7 +179,7 @@ export const generateProspectionReport = async (input: string): Promise<string> 
     const result = await model.generateContent(`Date=${new Date().toISOString()}. IN: ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateEstimationSummary = async (data: any): Promise<string> => {
@@ -191,7 +188,7 @@ export const generateEstimationSummary = async (data: any): Promise<string> => {
     const result = await model.generateContent(`Synthèse: ${JSON.stringify(data)}`);
     const response = await result.response;
     return response.text();
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
 
 export const generateDynamicRedaction = async (type: string, desc: string, variant: boolean = false): Promise<any> => {
@@ -200,5 +197,5 @@ export const generateDynamicRedaction = async (type: string, desc: string, varia
     const result = await model.generateContent(`T: ${type}, D: ${sanitizeInput(desc)}, V: ${variant}`);
     const response = await result.response;
     return JSON.parse(cleanJsonResponse(response.text()));
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { throw new Error(classifyError(e)); }
 };
