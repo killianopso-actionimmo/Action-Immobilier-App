@@ -15,47 +15,41 @@ export default async function handler(req: any, res: any) {
         process.env.API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ error: 'Clé API non détectée sur le serveur' });
+        return res.status(500).json({ error: 'Clé API non détectée sur le serveur. Vérifiez les variables Vercel.' });
     }
 
     const { contents, systemInstruction, tools } = req.body;
 
     try {
-        // Explicitly set apiVersion to 'v1' to avoid v1beta issues seen in logs
         const ai = new GoogleGenAI({
             apiKey,
             apiVersion: 'v1'
         });
 
+        // ENFORCING JSON MODE: Adding responseMimeType if tools are not present
+        // Note: tools and JSON mode are sometimes incompatible on certain models, but gemini-1.5-flash supports it well.
+        const generationConfig: any = {
+            temperature: 0.2, // Lower temperature for more consistent JSON
+            responseMimeType: "application/json",
+        };
+
         const response = await ai.models.generateContent({
             model: "gemini-1.5-flash",
             contents: Array.isArray(contents) ? contents : [{ role: "user", parts: [{ text: contents }] }],
             config: {
-                systemInstruction: systemInstruction || "Tu es un assistant utile.",
-                temperature: 0.4,
+                systemInstruction: `${systemInstruction}\nIMPORTANT: Réponds UNIQUEMENT avec un objet JSON valide. Pas de texte avant ou après. Pas de balises markdown \`\`\`json.`,
+                ...generationConfig,
                 tools: tools as any
             }
         });
 
+        // Log for debug (Vercel Logs)
+        console.log("Gemini Response Received");
+
         return res.status(200).json({ text: response.text });
     } catch (error: any) {
-        console.error("DEBUG - Gemini Error Details:", error);
-
+        console.error("Gemini Error:", error);
         const msg = error?.message || String(error);
-        const lowMsg = msg.toLowerCase();
-
-        let userMsg = "Erreur IA.";
-        if (lowMsg.includes("403") || lowMsg.includes("api key")) userMsg = "Clé invalide ou bannie par Google.";
-        else if (lowMsg.includes("429") || lowMsg.includes("quota")) userMsg = "Quotas atteints.";
-        else if (lowMsg.includes("404")) {
-            // Transparently show the 404 detail to help pinpoint the model string
-            userMsg = `Configuration Modèle (404) : ${msg.substring(0, 80)}`;
-        } else if (lowMsg.includes("region") || lowMsg.includes("location")) {
-            userMsg = "Blocage Régional : Google bloque cette IP serveur (Vercel).";
-        } else {
-            userMsg = `Détail technique : ${msg.substring(0, 100)}`;
-        }
-
-        return res.status(500).json({ error: userMsg, details: msg });
+        return res.status(500).json({ error: `Erreur IA: ${msg.substring(0, 100)}`, details: msg });
     }
 }
