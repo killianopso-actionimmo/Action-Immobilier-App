@@ -1,17 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-const FALLBACK_KEY = "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
-
-const getApiKey = () => {
-  // Try Vite env
-  let key = import.meta.env.VITE_GEMINI_API_KEY;
-
-  // Validate key
-  if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
-    return FALLBACK_KEY;
-  }
-  return key;
-};
+// Clé de secours directe pour garantir le fonctionnement immédiat
+const API_KEY = "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
 
 const sanitizeInput = (text: string): string => {
   if (!text) return "";
@@ -29,145 +19,146 @@ const cleanJsonResponse = (text: string | undefined): string => {
 };
 
 // --- PROMPTS ---
-const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". IMPORTANT : Réponds UNIQUEMENT avec le JSON brut. PAS de balises markdown. JSON: { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
-const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE IMMOBILIER. Analyse les équipements techniques. JSON brut uniquement: { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
-const SYSTEM_PROMPT_HEATING = `### EXPERT TECHNIQUE : CHAUFFAGE & ECS. JSON brut uniquement: { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
-const SYSTEM_PROMPT_RENOVATION = `### SECTION : POTENTIEL TRAVAUX & VALORISATION RAPIDE. JSON brut uniquement: { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
-const SYSTEM_PROMPT_CHECKLIST = `### SECTION : FICHE DE ROUTE TERRAIN. JSON brut uniquement: { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
-const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement: { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
-const SYSTEM_PROMPT_PIGE = `### PIGE STRATÉGIQUE. JSON brut uniquement: { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
-const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement: { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
-const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement: { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
-const SYSTEM_PROMPT_PROSPECTION = `ROLE : Intelligence centrale Action Immobilier. Nettoie et structure l'input. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
-const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur Senior Action Immobilier. Synthétise les notes en rapport Markdown propre.`;
-const SYSTEM_PROMPT_DYNAMIC_REDACTION = `ROLE : Assistant Communication. JSON brut uniquement: { "subject": "...", "content": "..." }`;
+const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Réponds UNIQUEMENT en JSON brut. Structure: { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
+const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE. JSON brut uniquement. { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
+const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON brut uniquement. { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
+const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON brut uniquement. { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
+const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON brut uniquement. { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
+const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement. { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
+const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON brut uniquement. { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
+const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement. { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
+const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement. { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
+const SYSTEM_PROMPT_PROSPECTION = `ROLE : IA Action Immobilier. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
+const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur Action Immobilier. Synthétise en Markdown.`;
+const SYSTEM_PROMPT_DYNAMIC_REDACTION = `ROLE : Assistant Communication. JSON: { "subject": "...", "content": "..." }`;
+
+// --- HELPER INITIALIZATION ---
+const getModel = (instruction: string, tools?: any[]) => {
+  const genAI = new GoogleGenAI(API_KEY);
+  return genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction: instruction,
+    tools: tools as any
+  });
+};
 
 // --- METHODS ---
 export const generateStreetReport = async (address: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_STREET });
   try {
-    const result = await model.generateContent(`Analyse l'adresse : ${address}.`);
+    const model = getModel(SYSTEM_PROMPT_STREET, [{ googleMaps: {} }]);
+    const result = await model.generateContent(`Analyse : ${address}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Quartier."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateTechnicalReport = async (description: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_TECHNICAL });
   try {
+    const model = getModel(SYSTEM_PROMPT_TECHNICAL);
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Technique."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateHeatingReport = async (description: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_HEATING });
   try {
+    const model = getModel(SYSTEM_PROMPT_HEATING);
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Chauffage."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateRenovationReport = async (description: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_RENOVATION });
   try {
+    const model = getModel(SYSTEM_PROMPT_RENOVATION);
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Travaux."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateChecklistReport = async (description: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_CHECKLIST });
   try {
+    const model = getModel(SYSTEM_PROMPT_CHECKLIST);
     const result = await model.generateContent(`Analyse : ${sanitizeInput(description)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Checklist."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateCoproReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_COPRO });
   try {
+    const model = getModel(SYSTEM_PROMPT_COPRO);
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
+    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Copro."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generatePigeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_PIGE });
   try {
+    const model = getModel(SYSTEM_PROMPT_PIGE);
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
+    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Pige."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateDpeReport = async (input: string, fileData?: { data: string, mimeType: string }): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_DPE });
   try {
+    const model = getModel(SYSTEM_PROMPT_DPE);
     const parts: any[] = [];
     if (fileData) parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     if (input) parts.push({ text: sanitizeInput(input) });
+    if (parts.length === 0) return "{}";
     const result = await model.generateContent(parts);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA DPE."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateRedactionReport = async (input: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_REDACTION });
   try {
-    const result = await model.generateContent(`Rédige pour : "${sanitizeInput(input)}"`);
+    const model = getModel(SYSTEM_PROMPT_REDACTION);
+    const result = await model.generateContent(`Rédige pour : ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Rédaction."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateProspectionReport = async (input: string): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_PROSPECTION });
   try {
-    const result = await model.generateContent(`Date=${new Date().toISOString()}. INPUT : "${sanitizeInput(input)}"`);
+    const model = getModel(SYSTEM_PROMPT_PROSPECTION);
+    const result = await model.generateContent(`Date=${new Date().toISOString()}. IN: ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (error) { throw new Error("Erreur IA Prospection."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateEstimationSummary = async (data: any): Promise<string> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_ESTIMATION_SUMMARY });
   try {
-    const result = await model.generateContent(`Synthèse pour : ${JSON.stringify(data)}`);
+    const model = getModel(SYSTEM_PROMPT_ESTIMATION_SUMMARY);
+    const result = await model.generateContent(`Synthèse: ${JSON.stringify(data)}`);
     const response = await result.response;
     return response.text();
-  } catch (error) { throw new Error("Erreur IA Synthèse."); }
+  } catch (e) { console.error(e); throw e; }
 };
 
 export const generateDynamicRedaction = async (type: string, desc: string, variant: boolean = false): Promise<any> => {
-  const genAI = new GoogleGenAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: SYSTEM_PROMPT_DYNAMIC_REDACTION });
   try {
-    const result = await model.generateContent(`TYPE: ${type}, DESC: ${sanitizeInput(desc)}, VAR: ${variant}`);
+    const model = getModel(SYSTEM_PROMPT_DYNAMIC_REDACTION);
+    const result = await model.generateContent(`T: ${type}, D: ${sanitizeInput(desc)}, V: ${variant}`);
     const response = await result.response;
     return JSON.parse(cleanJsonResponse(response.text()));
-  } catch (error) { throw new Error("Erreur IA Dynamique."); }
+  } catch (e) { console.error(e); throw e; }
 };
