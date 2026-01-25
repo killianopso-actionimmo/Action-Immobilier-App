@@ -1,4 +1,4 @@
-// --- FRONTEND SERVICE (V-1.1.2 SYNC) ---
+// --- FRONTEND SERVICE (V-1.1.3 SYNC) ---
 
 const callProxy = async (contents: any, systemInstruction: string, tools?: any[]) => {
   try {
@@ -10,7 +10,9 @@ const callProxy = async (contents: any, systemInstruction: string, tools?: any[]
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error((errorData.error || "Erreur serveur") + " [V-FRONT-1.1.2]");
+      // We pass the full error string to the UI for capture
+      const errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
+      throw new Error(errorMsg + " [V-FRONT-1.1.3]");
     }
 
     const data = await response.json();
@@ -36,7 +38,7 @@ const cleanJsonResponse = (text: string | undefined): string => {
   return cleaned.trim();
 };
 
-export const getApiStatus = (): string => "SERVER_MODE_1.1.2_CAMELCASE_REST";
+export const getApiStatus = (): string => "SERVER_MODE_1.1.3_DIAG_MODE";
 
 // --- DETAILED PROMPTS (RESTORED) ---
 const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". RÉPONDS UNIQUEMENT EN JSON BRUT. Structure : { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;

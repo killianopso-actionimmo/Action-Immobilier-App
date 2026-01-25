@@ -3,56 +3,49 @@ export const config = {
 };
 
 export default async function handler(req: any, res: any) {
-    const VERSION_TAG = "[V-PROXY-1.1.2-STABLE]";
+    const VERSION_TAG = "[V-PROXY-1.1.3-DIAG]";
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 1. Get API Key
     const apiKey = process.env.VITE_GEMINI_API_KEY ||
         process.env.GOOGLE_API_KEY ||
         process.env.GEMINI_API_KEY ||
         process.env.API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ error: `${VERSION_TAG} Clé API absente sur Vercel.` });
+        return res.status(500).json({ error: `${VERSION_TAG} API Key is missing in Vercel settings.` });
     }
 
     const { contents: rawContents, systemInstruction, tools } = req.body;
 
     try {
-        // 2. Build the Payload with 100% REGULATED CAMELCASE (REST Standard)
-        // The previous error "Unknown name 'r...'" was caused by 'response_mime_type'.
-        // We now use 'responseMimeType' and 'generationConfig'.
+        // 1. Build a "Minimum Viable" Payload
+        // To be 100% safe, we move systemInstruction INSIDE the user message
+        // and use the most basic camelCase configuration.
 
-        const contents = Array.isArray(rawContents)
-            ? rawContents
-            : [{ role: "user", parts: [{ text: String(rawContents) }] }];
+        const prompt = systemInstruction
+            ? `INSTRUCTION SYSTEME:\n${systemInstruction}\n\nREQUETE UTILISATEUR:\n${typeof rawContents === 'string' ? rawContents : JSON.stringify(rawContents)}`
+            : (typeof rawContents === 'string' ? rawContents : JSON.stringify(rawContents));
 
-        const payload: any = {
-            contents,
+        const payload = {
+            contents: [
+                {
+                    role: "user",
+                    parts: [{ text: prompt }]
+                }
+            ],
             generationConfig: {
-                temperature: 0.1,
+                temperature: 0.2,
                 responseMimeType: "application/json"
             }
         };
 
-        if (systemInstruction) {
-            payload.systemInstruction = {
-                parts: [{ text: String(systemInstruction) }]
-            };
-        }
-
-        if (tools && Array.isArray(tools) && tools.length > 0) {
-            // Many REST tools implementation grounding via "google_search_retrieval"
-            payload.tools = tools;
-        }
-
-        // 3. Official REST Endpoint Strategy (v1)
+        // 2. Try v1 first (the production URL)
         const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        console.log(`${VERSION_TAG} Fetching REST API with camelCase schema...`);
+        console.log(`${VERSION_TAG} Testing MINIMAL payload on v1...`);
 
         const googleResponse = await fetch(url, {
             method: 'POST',
@@ -63,30 +56,25 @@ export default async function handler(req: any, res: any) {
         const data = await googleResponse.json();
 
         if (!googleResponse.ok) {
-            // Return JSON with the FULL error message to stop guessing
-            const rawError = JSON.stringify(data);
-            console.error(`${VERSION_TAG} Google rejected the call:`, rawError);
+            // NO TRUNCATION here, return the full raw error
+            console.error(`${VERSION_TAG} Raw Google Rejection:`, JSON.stringify(data));
             return res.status(500).json({
-                error: `${VERSION_TAG} Erreur API: ${rawError}`,
-                details: rawError
+                error: `${VERSION_TAG} GOOGLE_ERROR: ${JSON.stringify(data)}`,
+                details: data
             });
         }
 
-        // 4. Extract generated text from successful nested response
-        const candidates = data.candidates || [];
-        const text = candidates[0]?.content?.parts?.[0]?.text;
-
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) {
-            throw new Error("Format de réponse Google inattendu: " + JSON.stringify(data));
+            return res.status(500).json({ error: "Empty response", raw: data });
         }
 
         return res.status(200).json({ text });
 
     } catch (error: any) {
-        console.error(`${VERSION_TAG} Fatal Catch:`, error);
         const msg = error?.message || String(error);
         return res.status(500).json({
-            error: `${VERSION_TAG} Erreur Critique: ${msg}`,
+            error: `${VERSION_TAG} CATCH_ERROR: ${msg}`,
             details: msg
         });
     }
