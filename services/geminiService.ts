@@ -1,7 +1,46 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Clé de secours directe pour garantir le fonctionnement immédiat
-const API_KEY = "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
+// --- RECOVERY LOGIC (TS VERSION OF PYTHON OS.ENVIRON) ---
+const getApiKey = () => {
+  // 1. Check all possible names (mimicking Python adaptation)
+  const env = import.meta.env;
+  const key = env.GOOGLE_API_KEY ||
+    env.VITE_GEMINI_API_KEY ||
+    env.API_KEY ||
+    (env as any).GEMINI_API_KEY;
+
+  // 2. Validation
+  if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
+    // Last resort: Hardcoded fallback provided in prompt
+    return "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30";
+  }
+  return key;
+};
+
+// Diagnostic helper (requested as /api-status equivalent)
+export const getApiStatus = (): string => {
+  const key = getApiKey();
+  // Check if it's the fallback or a real environment variable
+  if (!key) return 'VIDE';
+  if (key === "AIzaSyDWJQqHCiqrTX9roPIcRUkSDLBQO-T_S30" && !import.meta.env.VITE_GEMINI_API_KEY) {
+    return 'FALLBACK (Variables non détectées)';
+  }
+  return 'OK';
+};
+
+const classifyError = (error: any): string => {
+  const msg = error?.message?.toLowerCase() || "";
+  if (msg.includes("api key") || msg.includes("403") || msg.includes("401")) {
+    return "Erreur d'authentification : La clé API est invalide ou non reconnue par Google.";
+  }
+  if (msg.includes("429") || msg.includes("quota")) {
+    return "Quota atteint : Trop de requêtes envoyées. Veuillez patienter un instant.";
+  }
+  if (msg.includes("region") || msg.includes("location") || msg.includes("not supported")) {
+    return "Erreur de région : Le service Gemini n'est pas disponible dans votre zone géographique actuelle (utilisez un USA/Belgique si besoin).";
+  }
+  return `Erreur technique IA : ${error?.message || "Erreur inconnue"}`;
+};
 
 const sanitizeInput = (text: string): string => {
   if (!text) return "";
@@ -34,7 +73,8 @@ const SYSTEM_PROMPT_DYNAMIC_REDACTION = `ROLE : Assistant Communication. JSON: {
 
 // --- HELPER INITIALIZATION ---
 const getModel = (instruction: string, tools?: any[]) => {
-  const genAI = new GoogleGenAI(API_KEY);
+  const apiKey = getApiKey();
+  const genAI = new GoogleGenAI(apiKey);
   return genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     systemInstruction: instruction,
@@ -49,7 +89,7 @@ export const generateStreetReport = async (address: string): Promise<string> => 
     const result = await model.generateContent(`Analyse : ${address}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (e) { console.error(e); throw new Error(classifyError(e)); }
 };
 
 export const generateTechnicalReport = async (description: string): Promise<string> => {
@@ -133,7 +173,7 @@ export const generateRedactionReport = async (input: string): Promise<string> =>
     const result = await model.generateContent(`Rédige pour : ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
-  } catch (e) { console.error(e); throw e; }
+  } catch (error) { console.error(error); throw new Error(classifyError(error)); }
 };
 
 export const generateProspectionReport = async (input: string): Promise<string> => {

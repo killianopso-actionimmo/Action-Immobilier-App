@@ -4,7 +4,7 @@ import {
   generateStreetReport, generateTechnicalReport, generateHeatingReport,
   generateRenovationReport, generateChecklistReport,
   generateCoproReport, generatePigeReport, generateDpeReport, generateRedactionReport,
-  generateProspectionReport
+  generateProspectionReport, getApiStatus
 } from './services/geminiService';
 import InputSection from './components/InputSection';
 import ReportDisplay from './components/ReportDisplay';
@@ -101,6 +101,10 @@ function App() {
     if (savedIdeas) {
       try { setIdeas(JSON.parse(savedIdeas)); } catch (e) { }
     }
+    const status = getApiStatus();
+    console.log("--- Action Immobilier IA Diagnostic ---");
+    console.log("API Status:", status);
+    console.log("---------------------------------------");
   }, []);
 
   // 2. Auto-save history whenever it changes
