@@ -1,4 +1,4 @@
-// --- FRONTEND SERVICE (V-1.1.3 SYNC) ---
+// --- FRONTEND SERVICE (V-1.1.4 SYNC) ---
 
 const callProxy = async (contents: any, systemInstruction: string, tools?: any[]) => {
   try {
@@ -10,9 +10,9 @@ const callProxy = async (contents: any, systemInstruction: string, tools?: any[]
 
     if (!response.ok) {
       const errorData = await response.json();
-      // We pass the full error string to the UI for capture
-      const errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
-      throw new Error(errorMsg + " [V-FRONT-1.1.3]");
+      // NO TRUNCATION - Return full raw error string
+      const errorStr = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
+      throw new Error(errorStr + " [V-FRONT-1.1.4]");
     }
 
     const data = await response.json();
@@ -34,11 +34,15 @@ const sanitizeInput = (text: string): string => {
 const cleanJsonResponse = (text: string | undefined): string => {
   if (!text) return "{}";
   let cleaned = text.trim();
+  // If baseline test (V-1.1.4) doesn't return JSON, we might need a fallback
+  if (!cleaned.startsWith('{')) {
+    return JSON.stringify({ raw_text: cleaned });
+  }
   cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
   return cleaned.trim();
 };
 
-export const getApiStatus = (): string => "SERVER_MODE_1.1.3_DIAG_MODE";
+export const getApiStatus = (): string => "SERVER_MODE_1.1.4_BASELINE";
 
 // --- DETAILED PROMPTS (RESTORED) ---
 const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". RÉPONDS UNIQUEMENT EN JSON BRUT. Structure : { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
