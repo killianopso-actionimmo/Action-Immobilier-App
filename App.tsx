@@ -313,9 +313,10 @@ function App() {
       console.error("ERROR GENERATING/PARSING REPORT:", err);
       const errorMessage = err.message || "Erreur inconnue";
       const isJsonError = errorMessage.toLowerCase().includes('json');
+      const snippet = errorMessage.length > 80 ? errorMessage.substring(0, 80) + "..." : errorMessage;
       setError(
         isJsonError
-          ? "Le format de la réponse IA est incorrect (JSON invalide). Veuillez réessayer."
+          ? `Format IA incorrect (JSON invalide). Reçu : ${snippet}`
           : `Une erreur technique est survenue : ${errorMessage}`
       );
       setLoadingState(LoadingState.ERROR);
