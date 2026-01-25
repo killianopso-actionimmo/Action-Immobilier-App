@@ -5,6 +5,9 @@ export const config = {
 };
 
 export default async function handler(req: any, res: any) {
+    const VERSION_TAG = "[V-PROXY-1.0.5]";
+    console.log(`${VERSION_TAG} Request received`);
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -15,41 +18,36 @@ export default async function handler(req: any, res: any) {
         process.env.API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ error: 'Clé API non détectée sur le serveur. Vérifiez les variables Vercel.' });
+        return res.status(500).json({ error: `${VERSION_TAG} Clé API introuvable sur Vercel.` });
     }
 
     const { contents, systemInstruction, tools } = req.body;
 
     try {
-        const ai = new GoogleGenAI({
+        // Next Gen SDK Constructor (v1.x)
+        const genAI = new GoogleGenAI({
             apiKey,
             apiVersion: 'v1'
         });
 
-        // ENFORCING JSON MODE: Adding responseMimeType if tools are not present
-        // Note: tools and JSON mode are sometimes incompatible on certain models, but gemini-1.5-flash supports it well.
-        const generationConfig: any = {
-            temperature: 0.2, // Lower temperature for more consistent JSON
-            responseMimeType: "application/json",
-        };
-
-        const response = await ai.models.generateContent({
+        // Using the official models object for v1.x
+        const response = await genAI.models.generateContent({
             model: "gemini-1.5-flash",
             contents: Array.isArray(contents) ? contents : [{ role: "user", parts: [{ text: contents }] }],
             config: {
-                systemInstruction: `${systemInstruction}\nIMPORTANT: Réponds UNIQUEMENT avec un objet JSON valide. Pas de texte avant ou après. Pas de balises markdown \`\`\`json.`,
-                ...generationConfig,
-                tools: tools as any
+                systemInstruction,
+                temperature: 0.1, // Even more stable
+                responseMimeType: "application/json"
             }
         });
 
-        // Log for debug (Vercel Logs)
-        console.log("Gemini Response Received");
-
         return res.status(200).json({ text: response.text });
     } catch (error: any) {
-        console.error("Gemini Error:", error);
+        console.error(`${VERSION_TAG} Error:`, error);
         const msg = error?.message || String(error);
-        return res.status(500).json({ error: `Erreur IA: ${msg.substring(0, 100)}`, details: msg });
+        return res.status(500).json({
+            error: `${VERSION_TAG} Erreur IA: ${msg.substring(0, 100)}`,
+            details: msg
+        });
     }
 }

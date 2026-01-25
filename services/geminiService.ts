@@ -10,7 +10,7 @@ const callProxy = async (contents: any, systemInstruction: string, tools?: any[]
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Erreur serveur.");
+      throw new Error((errorData.error || "Erreur serveur") + " [V-FRONT-1.0.5]");
     }
 
     const data = await response.json();
