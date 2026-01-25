@@ -1,13 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 
-// --- SECURE KEY RETRIEVAL (STRICTLY VIA ENVIRONMENT VARIABLES) ---
+// --- SECURE KEY RETRIEVAL ---
 const getApiKey = () => {
-  const env = import.meta.env;
-  // Priority check as requested
-  const key = env.VITE_GEMINI_API_KEY ||
-    env.VITE_GOOGLE_API_KEY ||
-    env.GOOGLE_API_KEY ||
-    env.API_KEY;
+  const key = import.meta.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.VITE_GOOGLE_API_KEY ||
+    import.meta.env.GOOGLE_API_KEY ||
+    import.meta.env.API_KEY ||
+    (import.meta.env as any).GEMINI_API_KEY;
 
   if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
     throw new Error("Configuration système manquante (API KEY)");
@@ -15,7 +14,6 @@ const getApiKey = () => {
   return key;
 };
 
-// Diagnostic helper
 export const getApiStatus = (): string => {
   try {
     const key = getApiKey();
@@ -54,24 +52,23 @@ const cleanJsonResponse = (text: string | undefined): string => {
   return cleaned.trim();
 };
 
-// --- PROMPTS ---
-const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier. Réponds UNIQUEMENT en JSON brut. { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
-const SYSTEM_PROMPT_TECHNICAL = `ROLE : EXPERT TECHNIQUE. JSON: { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }`;
-const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON: { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }`;
-const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON: { "analysis": { "visual_diagnosis": "...", "light_strategy": "..." }, "smart_renovation": [], "estimates": [], "sales_arguments": [], "expert_secret": "..." }`;
-const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON: { "physical_checks": [], "shock_questions": [], "documents_needed": [], "strategic_reminder": "..." }`;
-const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON: { "summary": "...", "works_voted": [], "works_planned": [], "financial_alerts": [], "legal_alerts": [], "sales_argument": "..." }`;
-const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON: { "ad_analysis": { "flaws": [], "missing_info": [] }, "call_script": { "hook": "...", "technical_question": "...", "closing": "..." }, "expert_argument": "..." }`;
-const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON: { "current_analysis": "...", "improvements": [], "green_value_argument": "..." }`;
-const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON: { "email_vendor": "...", "social_post_linkedin": "...", "social_post_instagram": "..." }`;
-const SYSTEM_PROMPT_PROSPECTION = `IA Action Immobilier. JSON: { "intent": "log_prospection", "assistant_response": "...", "data": { "zone": "...", "type": "...", "date": "...", "mois": "..." } }`;
-const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `ROLE : Expert-Rédacteur. Synthétise en Markdown.`;
-const SYSTEM_PROMPT_DYNAMIC_REDACTION = `Assistant Communication. JSON: { "subject": "...", "content": "..." }`;
+const SYSTEM_PROMPT_STREET = `Expert Immobilier. JSON brut uniquement.`;
+const SYSTEM_PROMPT_TECHNICAL = `ROLE: EXPERT TECHNIQUE. JSON brut uniquement.`;
+const SYSTEM_PROMPT_HEATING = `### EXPERT CHAUFFAGE. JSON brut uniquement.`;
+const SYSTEM_PROMPT_RENOVATION = `### POTENTIEL TRAVAUX. JSON brut uniquement.`;
+const SYSTEM_PROMPT_CHECKLIST = `### FICHE TERRAIN. JSON brut uniquement.`;
+const SYSTEM_PROMPT_COPRO = `### ANALYSE COPRO. JSON brut uniquement.`;
+const SYSTEM_PROMPT_PIGE = `### PIGE PRO. JSON brut uniquement.`;
+const SYSTEM_PROMPT_DPE = `### DPE BOOSTER. JSON brut uniquement.`;
+const SYSTEM_PROMPT_REDACTION = `### RÉDACTION PRO. JSON brut uniquement.`;
+const SYSTEM_PROMPT_PROSPECTION = `IA Action Immobilier. JSON brut uniquement.`;
+const SYSTEM_PROMPT_ESTIMATION_SUMMARY = `Synthese Markdown.`;
+const SYSTEM_PROMPT_DYNAMIC_REDACTION = `Communication. JSON brut uniquement.`;
 
-// --- HELPER ---
 const getModel = (instruction: string, tools?: any[]) => {
   const apiKey = getApiKey();
-  const genAI = new GoogleGenAI(apiKey);
+  // CRITICAL: GoogleGenAI (Next Gen ^1.x) constructor expects { apiKey } object
+  const genAI = new GoogleGenAI({ apiKey });
   return genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     systemInstruction: instruction,
@@ -79,7 +76,6 @@ const getModel = (instruction: string, tools?: any[]) => {
   });
 };
 
-// --- API METHODS ---
 export const generateStreetReport = async (address: string): Promise<string> => {
   try {
     const model = getModel(SYSTEM_PROMPT_STREET, [{ googleMaps: {} }]);
@@ -167,7 +163,7 @@ export const generateDpeReport = async (input: string, fileData?: { data: string
 export const generateRedactionReport = async (input: string): Promise<string> => {
   try {
     const model = getModel(SYSTEM_PROMPT_REDACTION);
-    const result = await model.generateContent(`Rédige pour : ${sanitizeInput(input)}`);
+    const result = await model.generateContent(`Rédige : ${sanitizeInput(input)}`);
     const response = await result.response;
     return cleanJsonResponse(response.text());
   } catch (error) { throw new Error(classifyError(error)); }
