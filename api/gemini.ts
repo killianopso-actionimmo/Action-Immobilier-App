@@ -3,7 +3,7 @@ export const config = {
 };
 
 export default async function handler(req: any, res: any) {
-    const VERSION_TAG = "[V-PROXY-1.0.9-NUCLEAR]";
+    const VERSION_TAG = "[V-PROXY-1.1.0]";
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -22,8 +22,8 @@ export default async function handler(req: any, res: any) {
     const { contents: rawContents, systemInstruction, tools } = req.body;
 
     try {
-        // 2. Build the Raw JSON Payload (Google AI REST Standard)
-        // We normalize the content to the strict structure expected by the REST endpoint
+        // 2. Build the Payload with STRICT Case Mapping (Standard REST)
+        // We use camelCase for all fields as per modern Google AI REST specifications.
         const contents = Array.isArray(rawContents)
             ? rawContents
             : [{ role: "user", parts: [{ text: String(rawContents) }] }];
@@ -32,26 +32,26 @@ export default async function handler(req: any, res: any) {
             contents,
             generationConfig: {
                 temperature: 0.1,
-                response_mime_type: "application/json"
+                responseMimeType: "application/json" // CORRECT CAMELCASE
             }
         };
 
-        // Correct field name for system instruction in REST API is 'system_instruction'
         if (systemInstruction) {
-            payload.system_instruction = {
+            payload.systemInstruction = {
                 parts: [{ text: String(systemInstruction) }]
             };
         }
 
-        // Tools handling (REST expects 'tools' at top level)
         if (tools && Array.isArray(tools) && tools.length > 0) {
             payload.tools = tools;
         }
 
-        // 3. Talk directly to Google's REST API (Bypassing SDK mapping bugs)
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // 3. Raw Fetch (Direct to Google)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        console.log(`${VERSION_TAG} Fetching raw REST API...`);
+        // Note: Using v1beta as it supports all features including JSON mode and systemInstruction more reliably than v1 in some regions.
+
+        console.log(`${VERSION_TAG} Fetching raw REST API (v1beta)...`);
         const googleResponse = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -61,23 +61,29 @@ export default async function handler(req: any, res: any) {
         const data = await googleResponse.json();
 
         if (!googleResponse.ok) {
-            console.error(`${VERSION_TAG} Google REST Error:`, JSON.stringify(data));
-            throw new Error(data.error?.message || "Google API rejection.");
+            // We pass the FULL error message to the frontend for precise diagnosis
+            const fullMessage = data.error?.message || JSON.stringify(data);
+            console.error(`${VERSION_TAG} Google REST Rejection:`, fullMessage);
+
+            // Return a 200 with error details to allow the frontend to display the text box without crashing
+            return res.status(500).json({
+                error: `${VERSION_TAG} Erreur API: ${fullMessage}`,
+                details: fullMessage
+            });
         }
 
-        // 4. Extract text response
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) {
-            throw new Error("Réponse vide de Google.");
+            throw new Error("Réponse vide : " + JSON.stringify(data));
         }
 
         return res.status(200).json({ text });
 
     } catch (error: any) {
-        console.error(`${VERSION_TAG} Final Proxy Catch:`, error);
+        console.error(`${VERSION_TAG} Fatal Catch:`, error);
         const msg = error?.message || String(error);
         return res.status(500).json({
-            error: `${VERSION_TAG} Erreur Directe: ${msg.substring(0, 100)}`,
+            error: `${VERSION_TAG} Erreur Critique: ${msg}`,
             details: msg
         });
     }
