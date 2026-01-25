@@ -1,25 +1,21 @@
 import { GoogleGenAI } from "@google/genai";
 
-// --- SECURE KEY RETRIEVAL ---
+// --- SECURE KEY RETRIEVAL (VITE STANDARDS) ---
 const getApiKey = () => {
-  const key = import.meta.env.VITE_GEMINI_API_KEY ||
-    import.meta.env.VITE_GOOGLE_API_KEY ||
-    import.meta.env.GOOGLE_API_KEY ||
-    import.meta.env.API_KEY ||
-    (import.meta.env as any).GEMINI_API_KEY;
+  const key = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!key || key === 'undefined' || key === 'null' || key.trim() === '') {
-    throw new Error("Configuration système manquante (API KEY)");
+    throw new Error("Configuration système manquante (VITE_GEMINI_API_KEY)");
   }
   return key;
 };
 
 export const getApiStatus = (): string => {
   try {
-    const key = getApiKey();
-    return key ? 'OK' : 'VIDE';
+    const key = import.meta.env.VITE_GEMINI_API_KEY;
+    return (key && key !== 'undefined' && key.trim() !== '') ? 'OK' : 'VIDE';
   } catch (e) {
-    return 'VIDE';
+    return 'ERREUR_LECTURE';
   }
 };
 
