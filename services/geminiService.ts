@@ -333,7 +333,7 @@ export const generateStreetReport = async (address: string): Promise<string> => 
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -361,7 +361,7 @@ export const generateTechnicalReport = async (description: string): Promise<stri
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -388,7 +388,7 @@ export const generateHeatingReport = async (description: string): Promise<string
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -415,7 +415,7 @@ export const generateRenovationReport = async (description: string): Promise<str
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -442,7 +442,7 @@ export const generateChecklistReport = async (description: string): Promise<stri
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -479,7 +479,7 @@ export const generateCoproReport = async (input: string, fileData?: { data: stri
     if (parts.length === 0) return "{}";
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: { parts },
       config: { systemInstruction: SYSTEM_PROMPT_COPRO, temperature: 0.4 },
     });
@@ -509,7 +509,7 @@ export const generatePigeReport = async (input: string, fileData?: { data: strin
     if (parts.length === 0) return "{}";
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: { parts },
       config: { systemInstruction: SYSTEM_PROMPT_PIGE, temperature: 0.4 },
     });
@@ -539,7 +539,7 @@ export const generateDpeReport = async (input: string, fileData?: { data: string
     if (parts.length === 0) return "{}";
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: { parts },
       config: { systemInstruction: SYSTEM_PROMPT_DPE, temperature: 0.4 },
     });
@@ -556,7 +556,7 @@ export const generateRedactionReport = async (input: string): Promise<string> =>
   const ai = new GoogleGenAI({ apiKey });
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: `Rédige les contenus basés sur ces instructions : "${sanitizeInput(input)}"`,
       config: { systemInstruction: SYSTEM_PROMPT_REDACTION, temperature: 0.4 },
     });
@@ -579,7 +579,7 @@ export const generateProspectionReport = async (input: string): Promise<string> 
     const contextStr = `Contexte Actuel: Date=${dateStr}, Mois=${monthStr}.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: `${contextStr} INPUT BRUT : "${sanitizeInput(input)}"`,
       config: {
         systemInstruction: SYSTEM_PROMPT_PROSPECTION,
@@ -637,7 +637,7 @@ export const generateEstimationSummary = async (data: any): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     // Format the input data for the LLM
     const formattedInput = `
@@ -709,7 +709,7 @@ export const generateDynamicRedaction = async (type: 'mail' | 'sms' | 'social', 
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const modelId = "gemini-2.5-flash";
+    const modelId = "gemini-1.5-flash";
 
     const prompt = `
     TYPE DE MESSAGE : ${type.toUpperCase()}
