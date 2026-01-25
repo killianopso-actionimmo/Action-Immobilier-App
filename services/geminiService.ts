@@ -1,4 +1,4 @@
-// --- FRONTEND SERVICE (CALLS VERCEL PROXY) ---
+// --- FRONTEND SERVICE (V-1.0.9 SYNC) ---
 
 const callProxy = async (contents: any, systemInstruction: string, tools?: any[]) => {
   try {
@@ -10,7 +10,7 @@ const callProxy = async (contents: any, systemInstruction: string, tools?: any[]
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error((errorData.error || "Erreur serveur") + " [V-FRONT-1.0.8]");
+      throw new Error((errorData.error || "Erreur serveur") + " [V-FRONT-1.0.9]");
     }
 
     const data = await response.json();
@@ -36,7 +36,7 @@ const cleanJsonResponse = (text: string | undefined): string => {
   return cleaned.trim();
 };
 
-export const getApiStatus = (): string => "SERVER_MODE_1.0.8";
+export const getApiStatus = (): string => "SERVER_MODE_1.0.9_NUCLEAR";
 
 // --- DETAILED PROMPTS (RESTORED) ---
 const SYSTEM_PROMPT_STREET = `Tu es un expert immobilier d'élite. Tu dois générer des données techniques PRÉCISES pour un rapport de valorisation immobilière "Action Immobilier". RÉPONDS UNIQUEMENT EN JSON BRUT. Structure : { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }`;
