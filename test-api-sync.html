@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Synchronisation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            color: #856404;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+
+        .key-check {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 5px;
+        }
+
+        .key-item {
+            padding: 5px;
+            margin: 3px 0;
+        }
+
+        .key-found {
+            color: #27ae60;
+        }
+
+        .key-missing {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Test de Synchronisation API</h1>
+        <p class="subtitle">Vérification de la configuration JSON stricte (V-PROXY-2.0)</p>
+
+        <div>
+            <button onclick="testStreetReport()">Test Rapport de Rue</button>
+            <button onclick="testTechnicalReport()">Test Rapport Technique</button>
+            <button onclick="testHeatingReport()">Test Rapport Chauffage</button>
+        </div>
+
+        <div id="result" class="result" style="display:none;"></div>
+        <div id="keyCheck" class="key-check" style="display:none;"></div>
+    </div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+        const keyCheckDiv = document.getElementById('keyCheck');
+
+        function showLoading() {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '⏳ Envoi de la requête à l\'API...';
+            keyCheckDiv.style.display = 'none';
+        }
+
+        function showResult(data, isError = false) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = isError ? 'result error' : 'result success';
+            resultDiv.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function checkKeys(data, expectedKeys) {
+            keyCheckDiv.style.display = 'block';
+            keyCheckDiv.innerHTML = '<h3>🔍 Vérification des clés :</h3>';
+
+            expectedKeys.forEach(keyPath => {
+                const keys = keyPath.split('.');
+                let value = data;
+                let found = true;
+
+                for (const key of keys) {
+                    if (value && typeof value === 'object' && key in value) {
+                        value = value[key];
+                    } else {
+                        found = false;
+                        break;
+                    }
+                }
+
+                const className = found ? 'key-found' : 'key-missing';
+                const icon = found ? '✅' : '❌';
+                keyCheckDiv.innerHTML += `<div class="key-item ${className}">${icon} ${keyPath}</div>`;
+            });
+        }
+
+        async function testStreetReport() {
+            showLoading();
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: 'Analyse : 12 Rue de la Paix, 75002 Paris',
+                        systemInstruction: 'Tu es un expert immobilier d\'élite. RÈGLE ABSOLUE : Réponds UNIQUEMENT avec un objet JSON valide, SANS texte explicatif, SANS markdown, SANS balises ```json. Structure EXACTE requise : { "address": "...", "identity": { "ambiance": "...", "keywords": [], "accessibility_score": 0, "services_score": 0 }, "urbanism": { "building_type": "...", "plu_note": "...", "connectivity": [] }, "lifestyle": { "schools": [], "leisure": [] }, "highlights": [], "marketing_titles": [] }. Toutes les clés doivent être présentes.'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    showResult({ error: result.error }, true);
+                    return;
+                }
+
+                const jsonData = JSON.parse(result.text);
+                showResult(jsonData);
+
+                checkKeys(jsonData, [
+                    'address',
+                    'identity.ambiance',
+                    'identity.accessibility_score',
+                    'identity.services_score',
+                    'urbanism.building_type',
+                    'lifestyle.schools'
+                ]);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function testTechnicalReport() {
+            showLoading();
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: 'Analyse : Chaudière gaz Viessmann, radiateurs fonte, VMC simple flux',
+                        systemInstruction: 'ROLE : EXPERT TECHNIQUE IMMOBILIER. RÈGLE ABSOLUE : Réponds UNIQUEMENT avec un objet JSON valide, SANS texte explicatif, SANS markdown. Structure EXACTE : { "global_summary": "...", "items": [{ "equipment_name": "...", "verdict": "...", "technical_opinion": "...", "consumption_projection": "...", "sales_argument": "...", "negotiation_point": "..." }] }'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    showResult({ error: result.error }, true);
+                    return;
+                }
+
+                const jsonData = JSON.parse(result.text);
+                showResult(jsonData);
+
+                checkKeys(jsonData, [
+                    'global_summary',
+                    'items'
+                ]);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function testHeatingReport() {
+            showLoading();
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: 'Analyse : Chaudière Frisquet Hydromotrix 25kW',
+                        systemInstruction: 'EXPERT TECHNIQUE : CHAUFFAGE & ECS. RÈGLE ABSOLUE : Réponds UNIQUEMENT avec un objet JSON valide, SANS texte explicatif, SANS markdown. Structure EXACTE : { "configuration": { "type": "...", "description": "...", "pros_cons": "..." }, "brand_analysis": { "positioning": "...", "details": "..." }, "economic_analysis": { "rating": "...", "dpe_impact": "..." }, "agent_clarification": "...", "vigilance_points": [] }'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    showResult({ error: result.error }, true);
+                    return;
+                }
+
+                const jsonData = JSON.parse(result.text);
+                showResult(jsonData);
+
+                checkKeys(jsonData, [
+                    'configuration.type',
+                    'brand_analysis.positioning',
+                    'economic_analysis.rating',
+                    'agent_clarification',
+                    'vigilance_points'
+                ]);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+
+</html>
