@@ -7,16 +7,9 @@ import {
   generateProspectionReport, getApiStatus
 } from './services/openaiService';
 import InputSection from './components/InputSection';
-import ReportDisplay from './components/ReportDisplay';
-import TechnicalReportDisplay from './components/TechnicalReportDisplay';
-import HeatingReportDisplay from './components/HeatingReportDisplay';
-import RenovationReportDisplay from './components/RenovationReportDisplay';
-import ChecklistReportDisplay from './components/ChecklistReportDisplay';
-import CoproReportDisplay from './components/CoproReportDisplay';
-import PigeReportDisplay from './components/PigeReportDisplay';
-import DPEReportDisplay from './components/DPEReportDisplay';
-import RedactionReportDisplay from './components/RedactionReportDisplay';
+import MarkdownReportDisplay from './components/MarkdownReportDisplay';
 import ProspectionReportDisplay from './components/ProspectionReportDisplay';
+import EstimationWorkflow from './components/EstimationWorkflow';
 import ProspectionDashboard from './components/ProspectionDashboard';
 import MandateWatchDisplay from './components/MandateWatchDisplay';
 import EstimationWorkflow from './components/EstimationWorkflow';
@@ -56,16 +49,16 @@ function App() {
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [mode, setMode] = useState<AnalysisMode>('home');
 
-  // Data States
-  const [streetData, setStreetData] = useState<StreetReport | null>(null);
-  const [techData, setTechData] = useState<TechnicalReport | null>(null);
-  const [heatingData, setHeatingData] = useState<HeatingReport | null>(null);
-  const [renovationData, setRenovationData] = useState<RenovationReport | null>(null);
-  const [checklistData, setChecklistData] = useState<ChecklistReport | null>(null);
-  const [coproData, setCoproData] = useState<CoproReport | null>(null);
-  const [pigeData, setPigeData] = useState<PigeReport | null>(null);
-  const [dpeData, setDpeData] = useState<DpeReport | null>(null);
-  const [redactionData, setRedactionData] = useState<RedactionReport | null>(null);
+  // Data States (Markdown strings from OpenAI)
+  const [streetData, setStreetData] = useState<string | null>(null);
+  const [techData, setTechData] = useState<string | null>(null);
+  const [heatingData, setHeatingData] = useState<string | null>(null);
+  const [renovationData, setRenovationData] = useState<string | null>(null);
+  const [checklistData, setChecklistData] = useState<string | null>(null);
+  const [coproData, setCoproData] = useState<string | null>(null);
+  const [pigeData, setPigeData] = useState<string | null>(null);
+  const [dpeData, setDpeData] = useState<string | null>(null);
+  const [redactionData, setRedactionData] = useState<string | null>(null);
   const [prospectionData, setProspectionData] = useState<ProspectionReport | null>(null);
 
   // Prospection History State (Local Database)
@@ -236,31 +229,31 @@ function App() {
 
       if (mode === 'street') {
         res = await generateStreetReport(input);
-        setStreetData(safeJsonParse(res));
+        setStreetData(res);
       } else if (mode === 'technical') {
         res = await generateTechnicalReport(input);
-        setTechData(safeJsonParse(res));
+        setTechData(res);
       } else if (mode === 'heating') {
         res = await generateHeatingReport(input);
-        setHeatingData(safeJsonParse(res));
+        setHeatingData(res);
       } else if (mode === 'renovation') {
         res = await generateRenovationReport(input);
-        setRenovationData(safeJsonParse(res));
+        setRenovationData(res);
       } else if (mode === 'checklist') {
         res = await generateChecklistReport(input);
-        setChecklistData(safeJsonParse(res));
+        setChecklistData(res);
       } else if (mode === 'copro') {
-        res = await generateCoproReport(input, file);
-        setCoproData(safeJsonParse(res));
+        res = await generateCoproReport(input);
+        setCoproData(res);
       } else if (mode === 'pige') {
-        res = await generatePigeReport(input, file);
-        setPigeData(safeJsonParse(res));
+        res = await generatePigeReport(input);
+        setPigeData(res);
       } else if (mode === 'dpe') {
-        res = await generateDpeReport(input, file);
-        setDpeData(safeJsonParse(res));
+        res = await generateDpeReport(input);
+        setDpeData(res);
       } else if (mode === 'redaction') {
         res = await generateRedactionReport(input);
-        setRedactionData(safeJsonParse(res));
+        setRedactionData(res);
       } else if (mode === 'prospection') {
         res = await generateProspectionReport(input);
         const parsed: any = safeJsonParse(res); // Use any for intermediate parsing to check intent
@@ -343,7 +336,7 @@ function App() {
   const getMainTitle = () => {
     switch (mode) {
       case 'home': return "Accueil Expert";
-      case 'street': return streetData?.address || "Dossier Quartier";
+      case 'street': return "Dossier Quartier";
       case 'technical': return "Audit Technique";
       case 'heating': return "Analyse Thermique";
       case 'renovation': return "Projet Valorisation";
@@ -475,14 +468,14 @@ function App() {
                   </button>
                 </div>
 
-                {mode === 'street' && streetData && <ReportDisplay data={streetData} />}
-                {mode === 'technical' && techData && <TechnicalReportDisplay data={techData} />}
-                {mode === 'heating' && heatingData && <HeatingReportDisplay data={heatingData} />}
-                {mode === 'renovation' && renovationData && <RenovationReportDisplay data={renovationData} />}
-                {mode === 'checklist' && checklistData && <ChecklistReportDisplay data={checklistData} />}
-                {mode === 'copro' && coproData && <CoproReportDisplay data={coproData} />}
-                {mode === 'pige' && pigeData && <PigeReportDisplay data={pigeData} />}
-                {mode === 'dpe' && dpeData && <DPEReportDisplay data={dpeData} />}
+                {mode === 'street' && streetData && <MarkdownReportDisplay content={streetData} title="Analyse de Quartier" />}
+                {mode === 'technical' && techData && <MarkdownReportDisplay content={techData} title="Audit Technique" />}
+                {mode === 'heating' && heatingData && <MarkdownReportDisplay content={heatingData} title="Analyse Chauffage" />}
+                {mode === 'renovation' && renovationData && <MarkdownReportDisplay content={renovationData} title="Potentiel Travaux" />}
+                {mode === 'checklist' && checklistData && <MarkdownReportDisplay content={checklistData} title="Checklist Visite" />}
+                {mode === 'copro' && coproData && <MarkdownReportDisplay content={coproData} title="Analyse Copropriété" />}
+                {mode === 'pige' && pigeData && <MarkdownReportDisplay content={pigeData} title="Pige Concurrentielle" />}
+                {mode === 'dpe' && dpeData && <MarkdownReportDisplay content={dpeData} title="Analyse DPE" />}
                 {mode === 'prospection' && prospectionData && (
                   <ProspectionReportDisplay data={prospectionData} history={prospectionHistory} onReset={handleResetCampaign} />
                 )}
