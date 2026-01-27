@@ -12,7 +12,6 @@ import ProspectionReportDisplay from './components/ProspectionReportDisplay';
 import EstimationWorkflow from './components/EstimationWorkflow';
 import ProspectionDashboard from './components/ProspectionDashboard';
 import MandateWatchDisplay from './components/MandateWatchDisplay';
-import EstimationWorkflow from './components/EstimationWorkflow';
 import CalculatorTools from './components/CalculatorTools';
 import RedactionWorkflow from './components/RedactionWorkflow';
 import HomeDashboard from './components/HomeDashboard';
