@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Building, CheckCircle2, Sparkles, ArrowRight, FileText, Building2, StickyNote, AlertCircle, Copy } from 'lucide-react';
-import { generateEstimationSummary } from '../services/geminiService';
+import { generateEstimationSummary } from '../services/openaiService';
 import ReactMarkdown from 'react-markdown';
 
 type PropertyType = 'maison' | 'appartement' | null;

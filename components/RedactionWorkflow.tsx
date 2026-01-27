@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, MessageSquare, Share2, Sparkles, Copy, RefreshCw, Smartphone, Laptop, Send } from 'lucide-react';
-import { generateDynamicRedaction } from '../services/geminiService';
+import { generateDynamicRedaction } from '../services/openaiService';
 import ReactMarkdown from 'react-markdown';
 
 type MessageType = 'mail' | 'sms' | 'social' | null;
