@@ -5,7 +5,7 @@ import {
   generateRenovationReport, generateChecklistReport,
   generateCoproReport, generatePigeReport, generateDpeReport, generateRedactionReport,
   generateProspectionReport, getApiStatus
-} from './services/geminiService';
+} from './services/openaiService';
 import InputSection from './components/InputSection';
 import ReportDisplay from './components/ReportDisplay';
 import TechnicalReportDisplay from './components/TechnicalReportDisplay';
