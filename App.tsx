@@ -14,6 +14,7 @@ import ProspectionDashboard from './components/ProspectionDashboard';
 import MandateWatchDisplay from './components/MandateWatchDisplay';
 import CalculatorTools from './components/CalculatorTools';
 import RedactionWorkflow from './components/RedactionWorkflow';
+import QuickProspectionForm from './components/QuickProspectionForm';
 import HomeDashboard from './components/HomeDashboard';
 import IdeaBox from './components/IdeaBox';
 
@@ -148,6 +149,13 @@ function App() {
       };
       return [initLog, ...prev];
     });
+  };
+
+  // Quick Prospection Handler (No AI)
+  const handleQuickProspection = (entry: ProspectionLog) => {
+    setProspectionHistory(prev => [entry, ...prev]);
+    // Show success message
+    alert(`✅ Action ajoutée au dashboard !\n\n📍 Zone: ${entry.zone}\n📅 Date: ${entry.date}\n📦 Type: ${entry.type === 'boitage' ? 'Boîtage' : entry.type === 'porte_a_porte' ? 'Porte-à-porte' : 'Courrier'}`);
   };
 
   const handleDeleteMonth = (monthToDelete: string) => {
@@ -358,6 +366,11 @@ function App() {
       {/* Only show InputSection for modes that use the chatbot */}
       {!['home', 'estimation_workflow', 'calculator', 'mandate_watch', 'dashboard', 'redaction', 'idea_box'].includes(mode) && (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          {/* Quick Prospection Form (No AI) */}
+          {mode === 'prospection' && (
+            <QuickProspectionForm onAddProspection={handleQuickProspection} />
+          )}
+
           <InputSection
             onGenerate={handleGenerate}
             loadingState={loadingState}
