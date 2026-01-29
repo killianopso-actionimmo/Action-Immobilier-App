@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Brain, Compass, ChevronDown, Building2, PhoneCall, Search,
-    FileText, ClipboardList, Calculator, LayoutDashboard, Map, Users, Settings, Leaf, MapPin, Zap, Flame, PaintRoller, Lightbulb
+    FileText, ClipboardList, Calculator, LayoutDashboard, Map, Users, Settings, Leaf, MapPin, Zap, Flame, PaintRoller, Lightbulb, Target
 } from 'lucide-react';
 import { AnalysisMode } from '../types';
 
@@ -54,7 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                 { icon: ClipboardList, label: 'Préparation Estimation', mode: 'estimation_workflow' },
                 { icon: Building2, label: 'Checklist Visite', mode: 'checklist' },
                 { icon: Calculator, label: 'Calculatrice Express', mode: 'calculator' },
-                { icon: Lightbulb, label: 'Boîte à idées', mode: 'idea_box' }
+                { icon: Lightbulb, label: 'Boîte à idées', mode: 'idea_box' },
+                { icon: Target, label: 'Objectifs', mode: 'goals' }
             ]
         }
     ];
