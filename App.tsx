@@ -564,7 +564,7 @@ function App() {
         )}
 
         {mode === 'goals' && (
-          <GoalsTracker />
+          <GoalsTracker onGoBack={handleGoBack} onGoHome={handleGoHome} />
         )}
 
 

@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Mail, DoorOpen, Home, Plus, Minus, Check, RotateCcw } from 'lucide-react';
+import NavigationButtons from './NavigationButtons';
+
+interface GoalsTrackerProps {
+    onGoBack: () => void;
+    onGoHome: () => void;
+}
 
 interface MonthlyGoals {
     mandats: number;
@@ -16,7 +22,7 @@ const GOALS = {
     porteAPorte: 50,
 };
 
-const GoalsTracker: React.FC = () => {
+const GoalsTracker: React.FC<GoalsTrackerProps> = ({ onGoBack, onGoHome }) => {
     const getCurrentMonth = () => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -159,6 +165,8 @@ const GoalsTracker: React.FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
             <div className="max-w-7xl mx-auto">
+                <NavigationButtons onBack={onGoBack} onHome={onGoHome} />
+
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center gap-3 mb-4">
@@ -280,14 +288,14 @@ const GoalsTracker: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
                         className={`bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border shadow-lg transition-all ${goals.boitageValidated
-                                ? 'border-green-500/50 shadow-green-500/20'
-                                : 'border-slate-600/30 shadow-slate-500/10'
+                            ? 'border-green-500/50 shadow-green-500/20'
+                            : 'border-slate-600/30 shadow-slate-500/10'
                             }`}
                     >
                         <div className="flex flex-col items-center">
                             <div className={`w-48 h-48 rounded-full flex items-center justify-center border-8 transition-all ${goals.boitageValidated
-                                    ? 'border-green-500 bg-green-500/10 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
-                                    : 'border-slate-600 bg-slate-700/30'
+                                ? 'border-green-500 bg-green-500/10 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
+                                : 'border-slate-600 bg-slate-700/30'
                                 }`}>
                                 <Home className={`w-16 h-16 ${goals.boitageValidated ? 'text-green-400' : 'text-gray-500'}`} />
                             </div>
@@ -297,8 +305,8 @@ const GoalsTracker: React.FC = () => {
                         <button
                             onClick={toggleBoitage}
                             className={`w-full mt-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${goals.boitageValidated
-                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30'
-                                    : 'bg-slate-700 text-gray-300 border border-slate-600 hover:bg-slate-600'
+                                ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30'
+                                : 'bg-slate-700 text-gray-300 border border-slate-600 hover:bg-slate-600'
                                 }`}
                         >
                             {goals.boitageValidated ? (
