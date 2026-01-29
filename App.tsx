@@ -6,7 +6,15 @@ import {
   generateCoproReport, generatePigeReport, generateDpeReport, generateRedactionReport,
   generateProspectionReport, getApiStatus
 } from './services/openaiService';
-import InputSection from './components/InputSection';
+// Pages dédiées avec identité visuelle
+import StreetAnalysisPage from './components/pages/StreetAnalysisPage';
+import CoproAnalysisPage from './components/pages/CoproAnalysisPage';
+import PigeAnalysisPage from './components/pages/PigeAnalysisPage';
+import DpeAnalysisPage from './components/pages/DpeAnalysisPage';
+import TechnicalAnalysisPage from './components/pages/TechnicalAnalysisPage';
+import HeatingAnalysisPage from './components/pages/HeatingAnalysisPage';
+import RenovationAnalysisPage from './components/pages/RenovationAnalysisPage';
+import ChecklistPage from './components/pages/ChecklistPage';
 import MarkdownReportDisplay from './components/MarkdownReportDisplay';
 import ProspectionReportDisplay from './components/ProspectionReportDisplay';
 import EstimationWorkflow from './components/EstimationWorkflow';
@@ -408,22 +416,89 @@ function App() {
 
   return (
     <Layout currentMode={mode} onModeChange={handleModeChange}>
-      {/* Only show InputSection for modes that use the chatbot */}
-      {!['home', 'estimation_workflow', 'calculator', 'mandate_watch', 'dashboard', 'redaction', 'idea_box'].includes(mode) && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          {/* Quick Prospection Form (No AI) */}
-          {mode === 'prospection' && (
-            <QuickProspectionForm onAddProspection={handleQuickProspection} />
-          )}
+      {/* Pages dédiées avec identité visuelle */}
+      {mode === 'street' && (
+        <StreetAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
 
-          <InputSection
-            onGenerate={handleGenerate}
-            loadingState={loadingState}
-            mode={mode}
-            onModeChange={handleModeChange}
-          />
+      {mode === 'copro' && (
+        <CoproAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'pige' && (
+        <PigeAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'dpe' && (
+        <DpeAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'technical' && (
+        <TechnicalAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'heating' && (
+        <HeatingAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'renovation' && (
+        <RenovationAnalysisPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {mode === 'checklist' && (
+        <ChecklistPage
+          onGenerate={handleGenerate}
+          loadingState={loadingState}
+          onGoBack={handleGoBack}
+          onGoHome={handleGoHome}
+        />
+      )}
+
+      {/* Quick Prospection Form (No AI) */}
+      {mode === 'prospection' && (
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mt-6">
+            <QuickProspectionForm onAddProspection={handleQuickProspection} />
+          </div>
         </div>
       )}
+
 
       <div className="mt-8">
         {/* STANDALONE MODES (Priority) */}
