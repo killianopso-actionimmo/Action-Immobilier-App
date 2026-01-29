@@ -192,8 +192,9 @@ export enum LoadingState {
 
 export type AnalysisMode =
   | 'home'
-  | 'street' | 'technical' | 'heating' | 'renovation' | 'checklist' // Sub-modes of Estimation
-  | 'copro' | 'pige' | 'dpe' | 'redaction' | 'prospection' | 'mandate_watch' | 'dashboard'
-  | 'estimation_workflow' | 'calculator' | 'idea_box'; // New interactive modes
+  | 'street' | 'technical' | 'heating' | 'renovation' | 'checklist'
+  | 'copro' | 'pige' | 'dpe' | 'redaction'
+  | 'prospection' | 'dashboard' | 'mandate_watch' | 'calculator' | 'estimation_workflow' | 'idea_box'
+  | 'goals'; // Suivi objectifs personnelslculator' | 'idea_box'; // New interactive modes
 
 export type MainTab = 'home' | 'estimation' | 'copro' | 'pige' | 'dpe' | 'redaction' | 'prospection' | 'mandate_watch' | 'dashboard' | 'estimation_workflow' | 'calculator' | 'idea_box';

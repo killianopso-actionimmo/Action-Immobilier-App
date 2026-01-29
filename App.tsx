@@ -24,6 +24,7 @@ import CalculatorTools from './components/CalculatorTools';
 import RedactionWorkflow from './components/RedactionWorkflow';
 import QuickProspectionForm from './components/QuickProspectionForm';
 import NavigationButtons from './components/NavigationButtons';
+import GoalsTracker from './components/GoalsTracker';
 import HomeDashboard from './components/HomeDashboard';
 import IdeaBox from './components/IdeaBox';
 
@@ -561,6 +562,11 @@ function App() {
             />
           </div>
         )}
+
+        {mode === 'goals' && (
+          <GoalsTracker />
+        )}
+
 
         {/* GENERATOR MODES (Common Wrapper) */}
         {!['home', 'estimation_workflow', 'calculator', 'mandate_watch', 'dashboard', 'redaction', 'idea_box'].includes(mode) && (

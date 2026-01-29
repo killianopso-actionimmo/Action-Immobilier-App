@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Brain, Compass, FileText, PhoneCall, Search, Leaf,
     Building2, MapPin, Zap, Flame, PaintRoller, ClipboardList,
-    Calculator, ChevronLeft, Sparkles, ArrowRight, Lightbulb
+    Calculator, ChevronLeft, Sparkles, ArrowRight, Lightbulb, Target
 } from 'lucide-react';
 import { AnalysisMode } from '../types';
 
@@ -224,6 +224,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                                     <ServiceCard title="Checklist Visite" icon={Building2} image={IMAGES.checklist} onClick={() => onNavigate('checklist')} />
                                     <ServiceCard title="Calculatrice Express" icon={Calculator} image={IMAGES.calculator} onClick={() => onNavigate('calculator')} />
                                     <ServiceCard title="Boîte à Idées" icon={Lightbulb} image={IMAGES.idea_box} onClick={() => onNavigate('idea_box')} />
+                                    <ServiceCard
+                                        title="Objectifs du Mois"
+                                        icon={Target}
+                                        image="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&q=80&w=600"
+                                        onClick={() => onNavigate('goals')}
+                                    />
                                 </>
                             )}
                         </div>
