@@ -15,6 +15,7 @@ import MandateWatchDisplay from './components/MandateWatchDisplay';
 import CalculatorTools from './components/CalculatorTools';
 import RedactionWorkflow from './components/RedactionWorkflow';
 import QuickProspectionForm from './components/QuickProspectionForm';
+import NavigationButtons from './components/NavigationButtons';
 import HomeDashboard from './components/HomeDashboard';
 import IdeaBox from './components/IdeaBox';
 
@@ -48,6 +49,7 @@ const safeJsonParse = (jsonString: string) => {
 function App() {
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [mode, setMode] = useState<AnalysisMode>('home');
+  const [navigationHistory, setNavigationHistory] = useState<AnalysisMode[]>(['home']);
 
   // Data States (Markdown strings from OpenAI)
   const [streetData, setStreetData] = useState<string | null>(null);
@@ -114,6 +116,31 @@ function App() {
     }
   }, [prospectionHistory]);
 
+  // 3. Keyboard shortcuts for navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape key: Go back
+      if (e.key === 'Escape' && mode !== 'home') {
+        e.preventDefault();
+        handleGoBack();
+      }
+      // Ctrl+H: Go to home
+      if (e.ctrlKey && e.key === 'h') {
+        e.preventDefault();
+        handleGoHome();
+      }
+      // Ctrl+D: Go to dashboard
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        handleModeChange('dashboard');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mode, navigationHistory]);
+
+
   // Input Memory (to retry)
   const [lastInput, setLastInput] = useState<string>('');
   const [lastFile, setLastFile] = useState<{ data: string, mimeType: string } | undefined>(undefined);
@@ -121,8 +148,26 @@ function App() {
 
   const handleModeChange = (newMode: AnalysisMode) => {
     setMode(newMode);
+    setNavigationHistory(prev => [...prev, newMode]);
     setLoadingState(LoadingState.IDLE);
     setError(null);
+  };
+
+  const handleGoBack = () => {
+    if (navigationHistory.length > 1) {
+      const newHistory = [...navigationHistory];
+      newHistory.pop(); // Remove current page
+      const previousMode = newHistory[newHistory.length - 1] || 'home';
+      setNavigationHistory(newHistory);
+      setMode(previousMode);
+      setLoadingState(LoadingState.IDLE);
+    }
+  };
+
+  const handleGoHome = () => {
+    setMode('home');
+    setNavigationHistory(['home']);
+    setLoadingState(LoadingState.IDLE);
   };
 
   const getCurrentMonthName = () => {
@@ -390,30 +435,35 @@ function App() {
 
         {mode === 'estimation_workflow' && (
           <div className="max-w-7xl mx-auto">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <EstimationWorkflow />
           </div>
         )}
 
         {mode === 'calculator' && (
           <div className="max-w-7xl mx-auto">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <CalculatorTools />
           </div>
         )}
 
         {mode === 'mandate_watch' && (
           <div className="max-w-7xl mx-auto">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <MandateWatchDisplay />
           </div>
         )}
 
         {mode === 'redaction' && (
           <div className="max-w-7xl mx-auto">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <RedactionWorkflow />
           </div>
         )}
 
         {mode === 'idea_box' && (
           <div className="max-w-7xl mx-auto">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <IdeaBox
               ideas={ideas}
               onSubmit={handleAddIdea}
@@ -424,6 +474,7 @@ function App() {
 
         {mode === 'dashboard' && (
           <div className="max-w-7xl mx-auto space-y-16">
+            <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
             <ProspectionDashboard
               history={prospectionHistory}
               archives={prospectionArchives}
@@ -466,6 +517,9 @@ function App() {
 
             {loadingState === LoadingState.SUCCESS && (
               <div className="max-w-6xl mx-auto py-8">
+                {/* Navigation Buttons */}
+                <NavigationButtons onBack={handleGoBack} onHome={handleGoHome} showBackButton={navigationHistory.length > 1} />
+
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6 border-b border-slate-100 pb-6 md:pb-8">
                   <div>
                     <div className="flex items-center gap-2 text-primary-600 mb-2 md:mb-3 font-bold tracking-widest text-[10px] md:text-xs uppercase">
