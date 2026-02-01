@@ -6,6 +6,10 @@ import {
   generateCoproReport, generatePigeReport, generateDpeReport, generateRedactionReport,
   generateProspectionReport, getApiStatus
 } from './services/openaiService';
+// HUB Components
+import PinLockScreen from './components/PinLockScreen';
+import BottomNav from './components/BottomNav';
+import JuridicalBase from './components/JuridicalBase';
 // Pages dédiées avec identité visuelle
 import StreetAnalysisPage from './components/pages/StreetAnalysisPage';
 import CoproAnalysisPage from './components/pages/CoproAnalysisPage';
@@ -56,6 +60,10 @@ const safeJsonParse = (jsonString: string) => {
 };
 
 function App() {
+  // HUB States
+  const [isLocked, setIsLocked] = useState(true);
+  const [currentSection, setCurrentSection] = useState<'ia' | 'objectifs' | 'juridique'>('ia');
+
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [mode, setMode] = useState<AnalysisMode>('home');
   const [navigationHistory, setNavigationHistory] = useState<AnalysisMode[]>(['home']);
@@ -415,6 +423,31 @@ function App() {
     }
   };
 
+  // HUB: Si verrouillé, afficher PIN Lock
+  if (isLocked) {
+    return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
+  }
+
+  // HUB: Rendu des 3 sections
+  if (currentSection === 'objectifs') {
+    return (
+      <>
+        <GoalsTracker onGoBack={() => setCurrentSection('ia')} onGoHome={() => setCurrentSection('ia')} />
+        <BottomNav currentSection={currentSection} onSectionChange={setCurrentSection} />
+      </>
+    );
+  }
+
+  if (currentSection === 'juridique') {
+    return (
+      <>
+        <JuridicalBase />
+        <BottomNav currentSection={currentSection} onSectionChange={setCurrentSection} />
+      </>
+    );
+  }
+
+  // Section IA (par défaut)
   return (
     <Layout currentMode={mode} onModeChange={handleModeChange}>
       {/* Pages dédiées avec identité visuelle */}
@@ -638,6 +671,9 @@ function App() {
           </>
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav currentSection={currentSection} onSectionChange={setCurrentSection} />
     </Layout>
   );
 }
