@@ -9,6 +9,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Initialiser le thème immédiatement au chargement du module
+if (typeof document !== 'undefined') {
+    const savedTheme = localStorage.getItem('app_theme') as Theme || 'dark';
+    document.body.classList.add(savedTheme);
+}
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>(() => {
         // Charger le thème depuis localStorage ou utiliser 'dark' par défaut
