@@ -97,11 +97,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                 )}
             </AnimatePresence>
 
-            <div className={`fixed left-0 top-0 h-screen bg-white/70 backdrop-blur-md border-r border-white/20 flex flex-col z-50 transition-all duration-300 shadow-xl ${isOpen ? 'translate-x-0 w-72 md:w-64' : '-translate-x-full lg:translate-x-0 w-64'
+            <div className={`fixed left-0 top-0 h-screen bg-black/90 backdrop-blur-md border-r border-gray-800 flex flex-col z-50 transition-all duration-300 shadow-xl ${isOpen ? 'translate-x-0 w-72 md:w-64' : '-translate-x-full lg:translate-x-0 w-64'
                 }`}>
                 {/* Logo Area */}
                 <motion.div
-                    className="h-24 flex items-center justify-between px-6 border-b border-slate-100/50"
+                    className="h-24 flex items-center justify-between px-6 border-b border-gray-700/50"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                         animate={{ opacity: 1, x: 0 }}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-200 group relative mb-4 ${isItemActive('home')
                             ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg'
-                            : 'text-slate-700 hover:bg-slate-50'
+                            : 'text-gray-300 hover:bg-gray-800'
                             }`}
                     >
                         <Home size={18} className={isItemActive('home') ? 'text-white' : 'text-primary-600'} />
@@ -133,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                         {isItemActive('home') && (
                             <motion.div
                                 layoutId="activeIndicator"
-                                className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r"
+                                className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r"
                             />
                         )}
                     </motion.button>
@@ -148,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: catIndex * 0.1 }}
                                 whileHover={{ x: 4 }}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider text-slate-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-transparent transition-all group relative overflow-hidden"
+                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider text-gray-400 hover:bg-gradient-to-r hover:from-blue-900/30 hover:to-transparent transition-all group relative overflow-hidden"
                             >
                                 {/* Illuminate effect on hover */}
                                 <motion.div
@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                     transition={{ duration: 0.3 }}
                                     className="relative z-10"
                                 >
-                                    <ChevronDown size={16} className="text-slate-400" />
+                                    <ChevronDown size={16} className="text-gray-500" />
                                 </motion.div>
                             </motion.button>
 
@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                                     whileTap={{ scale: 0.98 }}
                                                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isItemActive(item.mode)
                                                         ? 'bg-gradient-to-r from-primary-50 to-primary-100/50 text-primary-700 shadow-lg'
-                                                        : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 hover:shadow-md'
+                                                        : 'text-gray-300 hover:bg-gray-800 hover:text-white hover:shadow-md'
                                                         }`}
                                                 >
                                                     {isItemActive(item.mode) && (
@@ -207,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                                         size={16}
                                                         className={`transition-all duration-200 ${isItemActive(item.mode)
                                                             ? 'text-primary-600'
-                                                            : 'text-slate-400 group-hover:text-slate-600'
+                                                            : 'text-gray-500 group-hover:text-gray-300'
                                                             }`}
                                                     />
                                                     <span>{item.label}</span>
@@ -233,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                 whileTap={{ scale: 0.98 }}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isItemActive(item.mode)
                                     ? 'bg-gradient-to-r from-primary-50 to-primary-100/50 text-primary-700 shadow-lg'
-                                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 hover:shadow-md'
+                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white hover:shadow-md'
                                     }`}
                             >
                                 {isItemActive(item.mode) && (
@@ -248,7 +248,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                                     size={18}
                                     className={`transition-all duration-200 ${isItemActive(item.mode)
                                         ? 'text-primary-600'
-                                        : 'text-slate-400 group-hover:text-slate-600'
+                                        : 'text-gray-500 group-hover:text-gray-300'
                                         }`}
                                 />
                                 <span>{item.label}</span>
@@ -258,13 +258,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                 </nav>
 
                 {/* Bottom Actions */}
-                <div className="p-4 border-t border-slate-100">
+                <div className="p-4 border-t border-gray-700">
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-white/60 hover:text-slate-900 transition-all hover:shadow-md group"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all hover:shadow-md group"
                     >
-                        <Settings size={20} className="text-slate-400 group-hover:rotate-90 transition-transform duration-300" />
+                        <Settings size={20} className="text-gray-500 group-hover:rotate-90 transition-transform duration-300" />
                         Paramètres
                     </motion.button>
                 </div>
