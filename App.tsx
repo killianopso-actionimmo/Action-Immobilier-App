@@ -424,9 +424,10 @@ function App() {
   };
 
   // HUB: Si verrouillé, afficher PIN Lock
-  if (isLocked) {
-    return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
-  }
+  // TEMPORAIREMENT DÉSACTIVÉ - Écran blanc
+  // if (isLocked) {
+  //   return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
+  // }
 
   // HUB: Rendu des 3 sections
   if (currentSection === 'objectifs') {
