@@ -106,3 +106,31 @@ body {
     padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Light Mode Styles */
+body.light {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+body.light .glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+body.light h1,
+body.light h2,
+body.light h3 {
+  color: #1e293b;
+}
+
+body.light p {
+  color: #475569;
+}

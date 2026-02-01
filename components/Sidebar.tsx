@@ -5,6 +5,7 @@ import {
     FileText, ClipboardList, Calculator, LayoutDashboard, Map, Users, Settings, Leaf, MapPin, Zap, Flame, PaintRoller, Lightbulb, Target
 } from 'lucide-react';
 import { AnalysisMode } from '../types';
+import SettingsModal from './SettingsModal';
 
 interface SidebarProps {
     currentMode: AnalysisMode;
@@ -81,6 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
     };
 
     const isItemActive = (mode: AnalysisMode) => currentMode === mode;
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     return (
         <>
@@ -262,12 +264,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => setIsSettingsOpen(true)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all hover:shadow-md group"
                     >
                         <Settings size={20} className="text-gray-500 group-hover:rotate-90 transition-transform duration-300" />
                         Paramètres
                     </motion.button>
                 </div>
+
+                {/* Settings Modal */}
+                <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
             </div>
         </>
     );

@@ -138,11 +138,30 @@ export const generateStreetReport = async (address: string): Promise<string> => 
 - Comparaison avec quartiers voisins
 
 ## 🚇 Urbanisme & Connectivité
-- **Station de métro la plus proche** : Nom EXACT de la station + numéro de ligne (ex: "Porte d'Arras, ligne 2")
-- **Distance** : En mètres ou minutes à pied depuis l'adresse
-- Autres transports (bus, tramway, RER)
-- Accessibilité voiture/vélo
-- Projets d'urbanisme futurs
+
+**⚠️ ATTENTION CRITIQUE - GÉOLOCALISATION PRÉCISE OBLIGATOIRE** :
+
+Pour la station de métro, tu DOIS ABSOLUMENT :
+1. Chercher la station LA PLUS PROCHE géographiquement de l'adresse donnée
+2. Indiquer le NOM EXACT de la station (PAS une approximation, PAS "à proximité")
+3. Indiquer le NUMÉRO DE LIGNE précis (1, 2, 3, etc.)
+4. Calculer la DISTANCE réelle en mètres ET en minutes à pied
+
+**FORMAT OBLIGATOIRE** :
+- **Station de métro la plus proche** : [Nom exact de la station], ligne [numéro] (à [distance]m, [temps] min à pied)
+
+**EXEMPLE CORRECT** :
+- **Station de métro la plus proche** : Porte d'Arras, ligne 2 (à 400m, 5 min à pied)
+
+**EXEMPLES INTERDITS** :
+- ❌ "Métro ligne 1 à proximité"
+- ❌ "Proche du métro"
+- ❌ "Station Lille Grand Palais"
+
+**AUTRES INFORMATIONS** :
+- Autres transports (bus, tramway, RER) avec numéros de lignes
+- Accessibilité voiture/vélo (pistes cyclables, parkings)
+- Projets d'urbanisme futurs si pertinents
 
 ## ✨ Points Forts pour la Vente
 - Arguments commerciaux clés
