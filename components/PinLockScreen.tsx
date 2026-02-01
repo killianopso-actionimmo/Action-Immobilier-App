@@ -89,7 +89,7 @@ const PinLockScreen: React.FC<PinLockScreenProps> = ({ onUnlock }) => {
                         animate={{ y: 0 }}
                         className="mb-6"
                     >
-                        <Lock className="w-16 h-16 mx-auto text-blue-400 drop-shadow-[0_0_20px_rgba(37,99,235,0.5)]" />
+                        <Lock className="w-16 h-16 mx-auto text-cyan-400 drop-shadow-[0_0_20px_rgba(0,255,255,0.5)]" />
                     </motion.div>
                     <h1 className="text-3xl font-bold text-white mb-2">Action Immo</h1>
                     <p className="text-gray-400 text-sm">
@@ -110,7 +110,7 @@ const PinLockScreen: React.FC<PinLockScreenProps> = ({ onUnlock }) => {
                                 animate={{ scale: 1 }}
                                 transition={{ delay: index * 0.1 }}
                                 className={`w-16 h-16 rounded-full border-2 flex items-center justify-center ${pin.length > index
-                                        ? 'border-blue-400 bg-blue-400/20 shadow-[0_0_15px_rgba(37,99,235,0.3)]'
+                                        ? 'border-cyan-400 bg-cyan-400/20 shadow-[0_0_15px_rgba(0,255,255,0.3)]'
                                         : 'border-gray-700 bg-gray-900/50'
                                     }`}
                             >
@@ -118,7 +118,7 @@ const PinLockScreen: React.FC<PinLockScreenProps> = ({ onUnlock }) => {
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="w-4 h-4 rounded-full bg-blue-400"
+                                        className="w-4 h-4 rounded-full bg-cyan-400"
                                     />
                                 )}
                             </motion.div>
@@ -145,7 +145,7 @@ const PinLockScreen: React.FC<PinLockScreenProps> = ({ onUnlock }) => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNumberClick(num)}
-                                className="h-16 rounded-xl bg-gray-900/50 border border-gray-700 text-white text-xl font-bold hover:border-blue-400 hover:bg-blue-400/10 transition-all"
+                                className="h-16 rounded-xl bg-gray-900/50 border border-gray-700 text-white text-xl font-bold hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
                             >
                                 {num}
                             </motion.button>
@@ -158,7 +158,7 @@ const PinLockScreen: React.FC<PinLockScreenProps> = ({ onUnlock }) => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleNumberClick(0)}
-                            className="h-16 rounded-xl bg-gray-900/50 border border-gray-700 text-white text-xl font-bold hover:border-blue-400 hover:bg-blue-400/10 transition-all"
+                            className="h-16 rounded-xl bg-gray-900/50 border border-gray-700 text-white text-xl font-bold hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
                         >
                             0
                         </motion.button>
