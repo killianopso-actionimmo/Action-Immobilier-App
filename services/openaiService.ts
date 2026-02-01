@@ -122,12 +122,12 @@ export const generateStreetReport = async (address: string): Promise<string> => 
 
 **STRUCTURE OBLIGATOIRE** :
 
-## 🏘️ Identité du Quartier
+## 🔷 Identité du Quartier
 - Ambiance générale (familiale, dynamique, bourgeoise, etc.)
 - Caractère architectural dominant
 - Mots-clés du quartier
 
-## 🏗️ Typologie des Bâtiments
+## 🏢 Typologie des Bâtiments
 - Style architectural (haussmannien, années 1930, moderne, etc.)
 - État général du bâti
 - Particularités architecturales
@@ -138,11 +138,13 @@ export const generateStreetReport = async (address: string): Promise<string> => 
 - Comparaison avec quartiers voisins
 
 ## 🚇 Urbanisme & Connectivité
-- Transports en commun (métro, bus, RER)
+- **Station de métro la plus proche** : Nom EXACT de la station + numéro de ligne (ex: "Porte d'Arras, ligne 2")
+- **Distance** : En mètres ou minutes à pied depuis l'adresse
+- Autres transports (bus, tramway, RER)
 - Accessibilité voiture/vélo
 - Projets d'urbanisme futurs
 
-## 🎯 Points Forts pour la Vente
+## ✨ Points Forts pour la Vente
 - Arguments commerciaux clés
 - Atouts uniques du quartier
 - Cible d'acheteurs idéale
