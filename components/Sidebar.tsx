@@ -5,6 +5,7 @@ import {
     FileText, ClipboardList, Calculator, LayoutDashboard, Map, Users, Settings, Leaf, MapPin, Zap, Flame, PaintRoller, Lightbulb, Target
 } from 'lucide-react';
 import { AnalysisMode } from '../types';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
     currentMode: AnalysisMode;
@@ -259,14 +260,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMode, onModeChange, isOpen, on
 
                 {/* Bottom Actions */}
                 <div className="p-4 border-t border-slate-100">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-white/60 hover:text-slate-900 transition-all hover:shadow-md group"
-                    >
-                        <Settings size={20} className="text-slate-400 group-hover:rotate-90 transition-transform duration-300" />
-                        Paramètres
-                    </motion.button>
+                    <div className="mb-3">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Paramètres</p>
+                        <ThemeToggle />
+                    </div>
                 </div>
             </div>
         </>
