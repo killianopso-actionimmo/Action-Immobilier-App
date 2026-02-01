@@ -70,7 +70,7 @@ async function callOpenAI(prompt: string): Promise<string> {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Tu es un expert immobilier français. Génère toujours des rapports en Markdown structuré, professionnel et détaillé.'
+                        content: 'Tu es un expert immobilier français ultra-local. Génère toujours des rapports en Markdown structuré, professionnel et détaillé. Utilise des titres en gras (##), des listes à puces, et des emojis pertinents pour chaque section. Sois précis, concret et actionnable.'
                     },
                     {
                         role: 'user',
@@ -112,17 +112,46 @@ async function callOpenAI(prompt: string): Promise<string> {
 export const getApiStatus = (): string => "OPENAI_GPT4O_MINI";
 
 export const generateStreetReport = async (address: string): Promise<string> => {
-    const prompt = `Génère un rapport d'expertise de quartier en Markdown pour : ${address}
+    const prompt = `Tu es un expert en immobilier ultra-local. Génère un rapport d'expertise de quartier en Markdown pour : ${address}
 
-Inclus :
-- Titre principal avec le nom de la rue/quartier
-- Section "Identité du Quartier" (ambiance, caractère, mots-clés)
-- Section "Urbanisme & Connectivité" (type de bâti, transports, PLU)
-- Section "Cadre de Vie" (écoles, commerces, loisirs)
-- Section "Points Forts pour la Vente"
-- Conclusion avec titre accrocheur
+**IMPORTANT** : Réponds IMPÉRATIVEMENT en Markdown avec :
+- Titres en gras (## pour sections principales)
+- Listes à puces pour tous les points
+- Emojis pertinents au début de chaque section
+- Ton professionnel mais engageant
 
-Utilise des emojis, des listes à puces, et un ton professionnel mais engageant.`;
+**STRUCTURE OBLIGATOIRE** :
+
+## 🏘️ Identité du Quartier
+- Ambiance générale (familiale, dynamique, bourgeoise, etc.)
+- Caractère architectural dominant
+- Mots-clés du quartier
+
+## 🏗️ Typologie des Bâtiments
+- Style architectural (haussmannien, années 1930, moderne, etc.)
+- État général du bâti
+- Particularités architecturales
+
+## 💰 Prix au m² Moyens
+- Fourchette de prix actuelle
+- Évolution récente
+- Comparaison avec quartiers voisins
+
+## 🚇 Urbanisme & Connectivité
+- Transports en commun (métro, bus, RER)
+- Accessibilité voiture/vélo
+- Projets d'urbanisme futurs
+
+## 🎯 Points Forts pour la Vente
+- Arguments commerciaux clés
+- Atouts uniques du quartier
+- Cible d'acheteurs idéale
+
+## ⚠️ Points de Vigilance
+- Éléments à surveiller
+- Potentiels freins à la vente
+
+Utilise des données concrètes et sois précis sur les prix et les projets.`;
 
     return await callOpenAI(prompt);
 };
