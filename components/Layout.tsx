@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, onModeChange }) 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 text-slate-900 font-sans selection:bg-primary-100 selection:text-primary-900">
+        <div className="min-h-screen bg-black text-slate-900 font-sans selection:bg-primary-100 selection:text-primary-900">
 
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-4">
