@@ -41,7 +41,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, onModeChange }) 
             />
 
             {/* Main Content Area with Responsive Margin + Bottom Nav Padding */}
-            <main className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0 pb-40">
+            <main className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0 pb-48">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentMode}

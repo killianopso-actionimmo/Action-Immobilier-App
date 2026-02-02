@@ -1,18 +1,26 @@
 @import "tailwindcss";
 
 @theme {
+  /* Palette Principale Unifiée */
+  --color-primary: #2563eb;
+  /* Bleu électrique */
+  --color-secondary: #7c3aed;
+  /* Violet */
+  --color-accent: #60a5fa;
+  /* Bleu clair */
+
   /* Dark Mode Colors */
   --color-bg-primary: #000000;
   --color-bg-card: rgba(15, 15, 15, 0.6);
-  --color-border-neon: #00ffff;
+  --color-border-neon: rgba(37, 99, 235, 0.5);
+  /* Bleu au lieu de cyan */
   --color-text-primary: #ffffff;
-  --color-text-secondary: #a0a0a0;
+  --color-text-secondary: #d1d5db;
 
-  /* Neon Colors */
-  --color-neon-cyan: #00ffff;
-  --color-neon-blue: #0099ff;
-  --color-neon-green: #00ff88;
-  --color-neon-red: #ff0055;
+  /* Neon Colors (Bleu/Violet uniquement) */
+  --color-neon-blue: #2563eb;
+  --color-neon-violet: #7c3aed;
+  --color-neon-accent: #60a5fa;
 
   /* Primary Colors (kept for compatibility) */
   --color-primary-50: #e0f2fe;
@@ -40,14 +48,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Card */
+/* Glassmorphism Card - Bleu Unifié */
 .glass-card {
   background: rgba(15, 15, 15, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  /* Bleu */
   border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(37, 99, 235, 0.1);
+  /* Bleu */
 }
 
 .glass-card-hover {

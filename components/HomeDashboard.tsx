@@ -36,33 +36,49 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         idea_box: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600"
     };
 
-    const CategoryCard = ({ title, desc, icon: Icon, image, onClick, color = "pink" }: any) => (
+    const CategoryCard = ({ title, desc, icon: Icon, image, onClick, variant = "primary" }: any) => (
         <motion.div
             onClick={onClick}
             className="relative group cursor-pointer h-[350px] md:h-[450px] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl"
             whileHover="hover"
             initial="rest"
         >
-            <div className={`absolute inset-0 bg-${color}-600/20 blur-2xl opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 z-0`} />
-            <div className={`absolute inset-0 border-2 border-transparent md:group-hover:border-${color}-500/50 rounded-2xl md:rounded-3xl z-30 transition-colors duration-300`} />
+            {/* Glow Effect - Bleu ou Violet */}
+            <div className={`absolute inset-0 ${variant === 'primary' ? 'bg-blue-600/20' : 'bg-violet-600/20'} blur-2xl opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 z-0`} />
+
+            {/* Border - Bleu ou Violet */}
+            <div className={`absolute inset-0 border-2 border-transparent ${variant === 'primary' ? 'md:group-hover:border-blue-500/50' : 'md:group-hover:border-violet-500/50'} rounded-2xl md:rounded-3xl z-30 transition-colors duration-300`} />
 
             <div className="absolute inset-0 z-10 overflow-hidden">
                 <motion.div
-                    className="w-full h-full bg-cover bg-center"
-                    style={{ backgroundImage: `url(${image})` }}
+                    className="w-full h-full"
                     variants={{
-                        rest: { scale: 1, filter: 'brightness(0.8) contrast(1.1)' },
-                        hover: { scale: 1.1, filter: 'brightness(1) contrast(1.2)' }
+                        rest: { scale: 1 },
+                        hover: { scale: 1.1 }
                     }}
-                    transition={{ duration: 0.8 }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                >
+                    <img
+                        src={image}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                    />
+                </motion.div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 transform md:group-hover:translate-y-[-10px] transition-transform duration-500">
-                <div className={`w-10 h-10 md:w-14 md:h-14 bg-${color}-600 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 shadow-lg transform -rotate-6 md:group-hover:rotate-0 transition-transform duration-300`}>
-                    <Icon className="text-white" size={32} />
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-20" />
+
+            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-30">
+                <motion.div
+                    className={`inline-flex p-3 md:p-4 rounded-xl md:rounded-2xl ${variant === 'primary' ? 'bg-blue-500/20 border border-blue-400/30' : 'bg-violet-500/20 border border-violet-400/30'} backdrop-blur-sm mb-4 md:mb-6`}
+                    variants={{
+                        rest: { scale: 1, rotate: 0 },
+                        hover: { scale: 1.1, rotate: 5 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                >
+                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${variant === 'primary' ? 'text-blue-400' : 'text-violet-400'}`} />
+                </motion.div>
                 <h3 className="text-2xl md:text-4xl font-serif font-bold text-white mb-2 md:mb-3 leading-tight">
                     {title}
                 </h3>
@@ -107,7 +123,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             whileHover={{ y: -8 }}
             whileTap={{ scale: 0.98 }}
         >
-            <div className="absolute inset-0 border-2 border-transparent md:group-hover:border-pink-500/50 rounded-xl md:rounded-2xl z-30 transition-all" />
+            <div className="absolute inset-0 border-2 border-transparent md:group-hover:border-blue-500/50 rounded-xl md:rounded-2xl z-30 transition-all" />
 
             <div className="absolute inset-0 z-10 overflow-hidden">
                 <motion.div
@@ -122,7 +138,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
 
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 z-20">
                 <div className="flex items-center gap-3">
-                    <div className="p-1.5 md:p-2 bg-pink-600 rounded-lg">
+                    <div className="p-1.5 md:p-2 bg-blue-600 rounded-lg">
                         <Icon size={18} className="text-white" />
                     </div>
                     <h4 className="text-lg md:text-xl font-bold text-white leading-tight">
@@ -166,7 +182,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                                 icon={Brain}
                                 image={IMAGES.cerveau_hub}
                                 onClick={() => setView('cerveau')}
-                                color="pink"
+                                variant="primary"
                             />
                             <CategoryCard
                                 title="Méthode Agence"
@@ -174,7 +190,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                                 icon={Compass}
                                 image={IMAGES.methode_hub}
                                 onClick={() => setView('methode')}
-                                color="purple"
+                                variant="secondary"
                             />
                         </div>
                     </motion.div>
